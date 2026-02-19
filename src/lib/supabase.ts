@@ -5,7 +5,67 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-project.supabase.co'
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key'
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+        persistSession: false, // Don't persist - we get token from native
+        autoRefreshToken: false, // Native handles refresh
+    }
+})
+
+// ===== Auth Token Management =====
+
+/**
+ * Set auth token from React Native WebView injection
+ * Call this on app init to authorize Supabase client
+ */
+export async function setAuthTokenFromNative() {
+    if (typeof window !== 'undefined') {
+        const token = (window as any).__NATIVE_AUTH_TOKEN__
+        
+        if (token) {
+            try {
+                // Set the auth token in Supabase client
+                const { data, error } = await supabase.auth.setSession({
+                    access_token: token,
+                    refresh_token: '', // Native handles refresh
+                })
+                
+                if (error) {
+                    console.error('❌ Error setting auth token:', error)
+                    return false
+                }
+                
+                console.log('✅ Auth token set from native injection')
+                console.log('👤 User:', data.user?.email)
+                return true
+            } catch (error) {
+                console.error('❌ Failed to set auth token:', error)
+                return false
+            }
+        } else {
+            console.warn('⚠️ No native auth token found')
+            return false
+        }
+    }
+    return false
+}
+
+/**
+ * Check current auth status (for debugging)
+ */
+export async function checkAuthStatus() {
+    const { data, error } = await supabase.auth.getSession()
+    
+    if (error) {
+        console.error('❌ Auth check error:', error)
+        return null
+    }
+    
+    console.log('🔐 Auth Status:', data.session ? 'Authenticated ✅' : 'Not authenticated ❌')
+    console.log('👤 User:', data.session?.user?.email || 'None')
+    
+    return data.session
+}
 
 // ===== Database Functions =====
 

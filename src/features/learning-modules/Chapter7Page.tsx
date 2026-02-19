@@ -5,6 +5,7 @@ import VisualStage, { VisualStageRef } from '../../components/stage/VisualStage'
 import { useTimeTracker } from '../../hooks/useTimeTracker'
 import { useAppStore } from '../../stores/useAppStore'
 import { sendToNative, isWebView } from '../../lib/bridge'
+import { setAuthTokenFromNative } from '../../lib/supabase'
 import type { ExecutionCommand } from '../../types'
 
 interface Chapter7PageProps {
@@ -25,15 +26,20 @@ export default function Chapter7Page({ isEmbedded = false }: Chapter7PageProps) 
     // Detect embedded mode and auth token from native
     useEffect(() => {
         if (isEmbedded && isWebView()) {
-            const token = (window as any).__NATIVE_AUTH_TOKEN__
-            const gamified = (window as any).__IS_GAMIFIED__
-            console.log('🔌 Running in WebView - Auth token:', token ? 'Present' : 'Missing')
-            console.log('🎮 Gamification mode:', gamified)
-            
-            // Update store if needed
-            if (typeof gamified === 'boolean') {
-                useAppStore.setState({ isGamified: gamified })
-            }
+            // Set auth token to Supabase client (async)
+            setAuthTokenFromNative().then((tokenSet) => {
+                console.log('🔌 Running in WebView')
+                console.log('🔐 Auth token:', tokenSet ? 'Set ✅' : 'Missing ❌')
+                
+                // Read gamification mode from native
+                const gamified = (window as any).__IS_GAMIFIED__
+                console.log('🎮 Gamification mode:', gamified)
+                
+                // Update store if needed
+                if (typeof gamified === 'boolean') {
+                    useAppStore.setState({ isGamified: gamified })
+                }
+            })
         }
     }, [isEmbedded])
 
