@@ -74,18 +74,10 @@ export default function Chapter7Page({ isEmbedded = false }: Chapter7PageProps) 
 
     // Minimalist embedded view - just the game
     if (isEmbedded) {
-        // Use window dimensions for dynamic sizing
-        const isMobile = window.innerWidth < 768
-        const blocklyHeight = isMobile ? window.innerHeight * 0.5 : window.innerHeight
-        const stageHeight = isMobile ? window.innerHeight * 0.45 : window.innerHeight - 80
-        
         return (
-            <div className="h-screen w-screen bg-gradient-to-br from-slate-900 to-slate-800 flex flex-col md:flex-row overflow-hidden">
-                {/* Blockly Workspace */}
-                <div 
-                    className="w-full md:w-1/2 bg-slate-800/30 backdrop-blur-sm border-b md:border-b-0 md:border-r border-slate-700/30 overflow-auto"
-                    style={{ height: isMobile ? `${blocklyHeight}px` : '100%' }}
-                >
+            <div className="h-screen w-screen bg-gradient-to-br from-slate-900 to-slate-800 flex flex-col overflow-hidden">
+                {/* Blockly Workspace - Expanded (70% on mobile, 60% on desktop) */}
+                <div className="flex-[7] md:flex-[6] bg-slate-800/30 backdrop-blur-sm border-b border-slate-700/30 overflow-hidden">
                     <BlocklyWorkspace
                         onCommandsGenerated={handleCommandsGenerated}
                         onExecute={handleExecute}
@@ -93,18 +85,41 @@ export default function Chapter7Page({ isEmbedded = false }: Chapter7PageProps) 
                     />
                 </div>
 
-                {/* Visual Stage */}
-                <div 
-                    className="w-full md:w-1/2 bg-slate-800/30 backdrop-blur-sm flex items-center justify-center p-2 overflow-hidden"
-                    style={{ height: isMobile ? `${stageHeight}px` : '100%' }}
-                >
-                    <VisualStage
-                        ref={stageRef}
-                        width={Math.min(480, window.innerWidth - 40)}
-                        height={Math.min(400, stageHeight - 40)}
-                        onExecutionStart={handleExecutionStart}
-                        onExecutionComplete={handleExecutionComplete}
-                    />
+                {/* Visual Stage - Scrollable Output (30% on mobile, 40% on desktop) */}
+                <div className="flex-[3] md:flex-[4] bg-slate-900/40 border-t border-slate-700/50 overflow-y-auto overflow-x-hidden">
+                    <div className="flex flex-col items-center p-3 gap-2">
+                        {/* Stage Title */}
+                        <div className="w-full flex items-center justify-between px-2">
+                            <h3 className="text-white/80 text-sm font-semibold">📺 Output</h3>
+                            <div className="text-white/50 text-xs">
+                                {isRunning ? '▶️ Running...' : '⏸️ Ready'}
+                            </div>
+                        </div>
+
+                        {/* Visual Stage Canvas */}
+                        <div className="bg-slate-800/50 rounded-lg p-2 border border-slate-700/30 shadow-lg">
+                            <VisualStage
+                                ref={stageRef}
+                                width={Math.min(380, window.innerWidth - 60)}
+                                height={Math.min(320, window.innerWidth - 60)}
+                                onExecutionStart={handleExecutionStart}
+                                onExecutionComplete={handleExecutionComplete}
+                            />
+                        </div>
+
+                        {/* Instructions (Collapsible) */}
+                        <details className="w-full bg-slate-800/30 rounded-lg border border-slate-700/30 mt-2">
+                            <summary className="px-3 py-2 text-white/60 text-xs cursor-pointer hover:bg-slate-700/30 rounded-lg transition">
+                                💡 Tips & Shortcut
+                            </summary>
+                            <div className="px-3 py-2 text-white/50 text-xs space-y-1">
+                                <p>• Drag blok dari toolbox ke workspace</p>
+                                <p>• Klik tombol hijau ▶️ untuk run</p>
+                                <p>• Gunakan "Ulangi" untuk loop</p>
+                                <p>• Scroll area ini untuk lihat output</p>
+                            </div>
+                        </details>
+                    </div>
                 </div>
             </div>
         )
