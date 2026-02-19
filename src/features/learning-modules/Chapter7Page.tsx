@@ -68,28 +68,37 @@ export default function Chapter7Page({ isEmbedded = false }: Chapter7PageProps) 
 
     // Minimalist embedded view - just the game
     if (isEmbedded) {
+        // Use window dimensions for dynamic sizing
+        const isMobile = window.innerWidth < 768
+        const blocklyHeight = isMobile ? window.innerHeight * 0.5 : window.innerHeight
+        const stageHeight = isMobile ? window.innerHeight * 0.45 : window.innerHeight - 80
+        
         return (
-            <div className="h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-2">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 h-full">
-                    {/* Blockly Workspace */}
-                    <div className="bg-slate-800/30 backdrop-blur-sm border border-slate-700/30 rounded-lg overflow-hidden">
-                        <BlocklyWorkspace
-                            onCommandsGenerated={handleCommandsGenerated}
-                            onExecute={handleExecute}
-                            isRunning={isRunning}
-                        />
-                    </div>
+            <div className="h-screen w-screen bg-gradient-to-br from-slate-900 to-slate-800 flex flex-col md:flex-row overflow-hidden">
+                {/* Blockly Workspace */}
+                <div 
+                    className="w-full md:w-1/2 bg-slate-800/30 backdrop-blur-sm border-b md:border-b-0 md:border-r border-slate-700/30 overflow-auto"
+                    style={{ height: isMobile ? `${blocklyHeight}px` : '100%' }}
+                >
+                    <BlocklyWorkspace
+                        onCommandsGenerated={handleCommandsGenerated}
+                        onExecute={handleExecute}
+                        isRunning={isRunning}
+                    />
+                </div>
 
-                    {/* Visual Stage */}
-                    <div className="bg-slate-800/30 backdrop-blur-sm border border-slate-700/30 rounded-lg p-4 flex items-center justify-center">
-                        <VisualStage
-                            ref={stageRef}
-                            width={Math.min(480, window.innerWidth - 100)}
-                            height={Math.min(400, window.innerHeight - 100)}
-                            onExecutionStart={handleExecutionStart}
-                            onExecutionComplete={handleExecutionComplete}
-                        />
-                    </div>
+                {/* Visual Stage */}
+                <div 
+                    className="w-full md:w-1/2 bg-slate-800/30 backdrop-blur-sm flex items-center justify-center p-2 overflow-hidden"
+                    style={{ height: isMobile ? `${stageHeight}px` : '100%' }}
+                >
+                    <VisualStage
+                        ref={stageRef}
+                        width={Math.min(480, window.innerWidth - 40)}
+                        height={Math.min(400, stageHeight - 40)}
+                        onExecutionStart={handleExecutionStart}
+                        onExecutionComplete={handleExecutionComplete}
+                    />
                 </div>
             </div>
         )

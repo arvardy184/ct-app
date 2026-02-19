@@ -18,13 +18,28 @@
   box-sizing: border-box;
 }
 
+/* Prevent bounce/overscroll in mobile WebView */
+html, body {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
 body {
   min-height: 100vh;
   background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+  /* Prevent text selection in WebView */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
 }
 
 #root {
   min-height: 100vh;
+  /* Allow text selection only in specific areas */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
 }
 
 /* Custom scrollbar */
