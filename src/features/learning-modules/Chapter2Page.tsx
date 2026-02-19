@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import BeadPatternActivity from '../../components/activities/BeadPatternActivity'
 import { useTimeTracker } from '../../hooks/useTimeTracker'
-import { useAppStore } from '../../stores/useAppStore'
 
 // Timer display component
 function TimerDisplay({ getElapsedTime }: { getElapsedTime: () => number }) {
@@ -28,7 +27,6 @@ function TimerDisplay({ getElapsedTime }: { getElapsedTime: () => number }) {
 }
 
 export default function Chapter2Page() {
-    const { isGamified } = useAppStore()
     const { finishActivity, getElapsedTime } = useTimeTracker({
         activityName: 'chapter2_bead_pattern',
         autoStart: true,

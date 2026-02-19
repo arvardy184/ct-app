@@ -4,7 +4,7 @@ import BlocklyWorkspace from '../../components/blockly/BlocklyWorkspace'
 import VisualStage, { VisualStageRef } from '../../components/stage/VisualStage'
 import { useTimeTracker } from '../../hooks/useTimeTracker'
 import { useAppStore } from '../../stores/useAppStore'
-import { sendToNative } from '../../lib/bridge'
+import { sendToNative, isWebView } from '../../lib/bridge'
 import type { ExecutionCommand } from '../../types'
 
 interface Chapter7PageProps {
@@ -22,6 +22,21 @@ export default function Chapter7Page({ isEmbedded = false }: Chapter7PageProps) 
         autoStart: true,
     })
 
+    // Detect embedded mode and auth token from native
+    useEffect(() => {
+        if (isEmbedded && isWebView()) {
+            const token = (window as any).__NATIVE_AUTH_TOKEN__
+            const gamified = (window as any).__IS_GAMIFIED__
+            console.log('🔌 Running in WebView - Auth token:', token ? 'Present' : 'Missing')
+            console.log('🎮 Gamification mode:', gamified)
+            
+            // Update store if needed
+            if (typeof gamified === 'boolean') {
+                useAppStore.setState({ isGamified: gamified })
+            }
+        }
+    }, [isEmbedded])
+
     const handleCommandsGenerated = useCallback((newCommands: ExecutionCommand[]) => {
         setCommands(newCommands)
     }, [])
@@ -38,65 +53,94 @@ export default function Chapter7Page({ isEmbedded = false }: Chapter7PageProps) 
 
     const handleExecutionComplete = useCallback(() => {
         setIsRunning(false)
-        // Send completion to Native
-        sendToNative({
-            type: 'ACTIVITY_COMPLETE',
-            data: {
-                score: 10,
-                timeSpent: getElapsedTime()
-            }
-        })
-    }, [getElapsedTime])
+        
+        // Send completion to Native - Mobile app will handle XP & logging
+        if (isEmbedded) {
+            sendToNative({
+                type: 'ACTIVITY_COMPLETE',
+                data: {
+                    score: 10,
+                    timeSpent: getElapsedTime()
+                }
+            })
+        }
+    }, [getElapsedTime, isEmbedded])
 
+    // Minimalist embedded view - just the game
+    if (isEmbedded) {
+        return (
+            <div className="h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-2">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 h-full">
+                    {/* Blockly Workspace */}
+                    <div className="bg-slate-800/30 backdrop-blur-sm border border-slate-700/30 rounded-lg overflow-hidden">
+                        <BlocklyWorkspace
+                            onCommandsGenerated={handleCommandsGenerated}
+                            onExecute={handleExecute}
+                            isRunning={isRunning}
+                        />
+                    </div>
+
+                    {/* Visual Stage */}
+                    <div className="bg-slate-800/30 backdrop-blur-sm border border-slate-700/30 rounded-lg p-4 flex items-center justify-center">
+                        <VisualStage
+                            ref={stageRef}
+                            width={Math.min(480, window.innerWidth - 100)}
+                            height={Math.min(400, window.innerHeight - 100)}
+                            onExecutionStart={handleExecutionStart}
+                            onExecutionComplete={handleExecutionComplete}
+                        />
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    // Full web view - with all context and instructions
     return (
-        <div className={`space-y-6 animate-fade-in ${isEmbedded ? 'p-2' : ''}`}>
-            {/* Header - Hide if embedded */}
-            {!isEmbedded && (
-                <div className="flex items-center justify-between">
-                    <div>
-                        <Link to="/" className="text-white/60 hover:text-white transition-colors mb-2 inline-block">
-                            ← Kembali ke Dashboard
-                        </Link>
-                        <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-                            <span>🧩</span> Bab 7: Visual Programming
-                        </h1>
-                        <p className="text-white/60 mt-2">
-                            Buat program visual seperti Scratch untuk menggerakkan karakter
-                        </p>
-                    </div>
-
-                    {/* Timer */}
-                    <div className="bg-slate-800/50 px-4 py-2 rounded-lg">
-                        <p className="text-white/60 text-sm">Waktu Belajar</p>
-                        <TimerDisplay getElapsedTime={getElapsedTime} />
-                    </div>
+        <div className="space-y-6 animate-fade-in">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+                <div>
+                    <Link to="/" className="text-white/60 hover:text-white transition-colors mb-2 inline-block">
+                        ← Kembali ke Dashboard
+                    </Link>
+                    <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+                        <span>🧩</span> Bab 7: Visual Programming
+                    </h1>
+                    <p className="text-white/60 mt-2">
+                        Buat program visual seperti Scratch untuk menggerakkan karakter
+                    </p>
                 </div>
-            )}
 
-            {/* Learning Objectives - Hide if embedded (Native app handles context) */}
-            {!isEmbedded && (
-                <div className="bg-gradient-to-r from-purple-600/20 to-indigo-600/20 border border-purple-500/30 rounded-2xl p-6">
-                    <h2 className="text-xl font-bold text-white mb-4">📌 Tujuan Pembelajaran</h2>
-                    <ul className="space-y-2 text-white/80">
-                        <li className="flex items-start gap-2">
-                            <span className="text-green-400 mt-1">✓</span>
-                            Memahami konsep pemrograman visual
-                        </li>
-                        <li className="flex items-start gap-2">
-                            <span className="text-green-400 mt-1">✓</span>
-                            Membuat urutan perintah (sequence)
-                        </li>
-                        <li className="flex items-start gap-2">
-                            <span className="text-green-400 mt-1">✓</span>
-                            Menggunakan perulangan (loop) untuk efisiensi
-                        </li>
-                        <li className="flex items-start gap-2">
-                            <span className="text-green-400 mt-1">✓</span>
-                            Menguji dan memperbaiki program (debugging)
-                        </li>
-                    </ul>
+                {/* Timer */}
+                <div className="bg-slate-800/50 px-4 py-2 rounded-lg">
+                    <p className="text-white/60 text-sm">Waktu Belajar</p>
+                    <TimerDisplay getElapsedTime={getElapsedTime} />
                 </div>
-            )}
+            </div>
+
+            {/* Learning Objectives */}
+            <div className="bg-gradient-to-r from-purple-600/20 to-indigo-600/20 border border-purple-500/30 rounded-2xl p-6">
+                <h2 className="text-xl font-bold text-white mb-4">📌 Tujuan Pembelajaran</h2>
+                <ul className="space-y-2 text-white/80">
+                    <li className="flex items-start gap-2">
+                        <span className="text-green-400 mt-1">✓</span>
+                        Memahami konsep pemrograman visual
+                    </li>
+                    <li className="flex items-start gap-2">
+                        <span className="text-green-400 mt-1">✓</span>
+                        Membuat urutan perintah (sequence)
+                    </li>
+                    <li className="flex items-start gap-2">
+                        <span className="text-green-400 mt-1">✓</span>
+                        Menggunakan perulangan (loop) untuk efisiensi
+                    </li>
+                    <li className="flex items-start gap-2">
+                        <span className="text-green-400 mt-1">✓</span>
+                        Menguji dan memperbaiki program (debugging)
+                    </li>
+                </ul>
+            </div>
 
             {/* Main Content - Split View */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

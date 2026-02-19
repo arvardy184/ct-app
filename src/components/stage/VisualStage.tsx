@@ -124,7 +124,7 @@ const VisualStage = forwardRef<VisualStageRef, VisualStageProps>(({
     onExecutionComplete,
     onExecutionStart
 }, ref) => {
-    const { sprite, setSpritePosition, setSpriteRotation, resetSprite, setAnimating, isGamified, addXP } = useAppStore()
+    const { sprite, setSpritePosition, setSpriteRotation, setAnimating, isGamified, addXP } = useAppStore()
     const [consoleOutput, setConsoleOutput] = useState<string[]>([])
     const [isExecuting, setIsExecuting] = useState(false)
     const animationRef = useRef<number | null>(null)
