@@ -4,6 +4,7 @@ import AuthGuard from './components/layout/AuthGuard'
 import DashboardPage from './features/dashboard/DashboardPage'
 import Chapter2Page from './features/learning-modules/Chapter2Page'
 import Chapter7Page from './features/learning-modules/Chapter7Page'
+import Chapter7ListPage from './features/learning-modules/Chapter7ListPage'
 import LoginPage from './features/auth/LoginPage'
 import RegisterPage from './features/auth/RegisterPage'
 import APActivityPage from './features/learning-modules/APActivityPage'
@@ -24,7 +25,7 @@ function App() {
             }>
                 <Route index element={<DashboardPage />} />
                 <Route path="chapter2" element={<Chapter2Page />} />
-                <Route path="chapter7" element={<Chapter7Page />} />
+                <Route path="chapter7" element={<Chapter7ListPage />} />
             </Route>
 
             {/* ── Embedded Routes (React Native WebView — no auth guard, token injected) ── */}
