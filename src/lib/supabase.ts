@@ -1,14 +1,15 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Supabase configuration
-// TODO: Replace with your actual Supabase credentials
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-project.supabase.co'
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key'
 
+// Detect if running inside React Native WebView
+const isEmbedded = typeof window !== 'undefined' && !!(window as any).__IS_EMBEDDED__
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
-        persistSession: false, // Don't persist - we get token from native
-        autoRefreshToken: false, // Native handles refresh
+        persistSession: !isEmbedded,   // Browser: persist to localStorage; WebView: memory only
+        autoRefreshToken: !isEmbedded, // Browser: auto-refresh; WebView: native handles refresh
     }
 })
 
@@ -65,6 +66,45 @@ export async function checkAuthStatus() {
     console.log('👤 User:', data.session?.user?.email || 'None')
     
     return data.session
+}
+
+// ===== Web Auth Functions (for standalone browser access) =====
+
+export async function signInWithEmail(email: string, password: string) {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) return { user: null, error: error.message }
+    return { user: data.user, error: null }
+}
+
+export async function signUpWithEmail(email: string, password: string) {
+    const { data, error } = await supabase.auth.signUp({ email, password })
+    if (error) return { user: null, error: error.message }
+    return { user: data.user, error: null }
+}
+
+export async function signOut() {
+    await supabase.auth.signOut()
+}
+
+export async function createProfile(
+    userId: string,
+    name: string,
+    email: string,
+    groupType: 'A' | 'B'
+) {
+    const { error } = await supabase.from('profiles').insert({
+        id: userId,
+        name,
+        email,
+        group_type: groupType,
+    })
+    if (error) {
+        console.error('Error creating profile:', error)
+        return false
+    }
+    // Also create gamification_stats row
+    await supabase.from('gamification_stats').insert({ user_id: userId })
+    return true
 }
 
 // ===== Database Functions =====

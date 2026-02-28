@@ -1,24 +1,15 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAppStore } from '../../stores/useAppStore'
-import { useEffect } from 'react'
+import { signOut } from '../../lib/supabase'
 
 export default function DashboardPage() {
-    const { userSession, setUserSession, isGamified } = useAppStore()
+    const { userSession, isGamified } = useAppStore()
+    const navigate = useNavigate()
 
-    // Auto-create demo user if not logged in
-    useEffect(() => {
-        if (!userSession) {
-            setUserSession({
-                id: 'demo-user-1',
-                name: 'Siswa Demo',
-                email: 'demo@example.com',
-                xp: 0,
-                level: 1,
-                badges: [],
-                groupType: 'A',
-            })
-        }
-    }, [userSession, setUserSession])
+    async function handleSignOut() {
+        await signOut()
+        navigate('/login')
+    }
 
     const modules = [
         {
@@ -53,9 +44,17 @@ export default function DashboardPage() {
     return (
         <div className="space-y-8 animate-fade-in">
             {/* Welcome Section */}
-            <section className="text-center py-8">
+            <section className="text-center py-8 relative">
+                <button
+                    onClick={handleSignOut}
+                    className="absolute right-0 top-0 px-4 py-2 bg-slate-700/50 hover:bg-slate-600/60
+                               border border-slate-600/40 text-white/60 hover:text-white text-sm
+                               rounded-xl transition-all duration-200"
+                >
+                    Keluar →
+                </button>
                 <h1 className="text-4xl font-bold text-white mb-4">
-                    {isGamified ? '🎮 Selamat Datang, Petualang!' : '📚 Selamat Datang!'}
+                    {isGamified ? `🎮 Halo, ${userSession?.name ?? 'Petualang'}!` : `📚 Halo, ${userSession?.name ?? 'Siswa'}!`}
                 </h1>
                 <p className="text-xl text-white/70 max-w-2xl mx-auto">
                     Mari belajar berpikir komputasional dan algoritma dengan cara yang menyenangkan!

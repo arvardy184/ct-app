@@ -1,6 +1,6 @@
 import { useRef, useState, useCallback, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import BlocklyWorkspace from '../../components/blockly/BlocklyWorkspace'
+import BlocklyWorkspace, { BlocklyWorkspaceRef } from '../../components/blockly/BlocklyWorkspace'
 import VisualStage, { VisualStageRef } from '../../components/stage/VisualStage'
 import { useTimeTracker } from '../../hooks/useTimeTracker'
 import { useAppStore } from '../../stores/useAppStore'
@@ -14,8 +14,11 @@ interface Chapter7PageProps {
 
 export default function Chapter7Page({ isEmbedded = false }: Chapter7PageProps) {
     const stageRef = useRef<VisualStageRef>(null)
+    const blocklyRef = useRef<BlocklyWorkspaceRef>(null)
     const [commands, setCommands] = useState<ExecutionCommand[]>([])
     const [isRunning, setIsRunning] = useState(false)
+    const [activeTab, setActiveTab] = useState<'editor' | 'output'>('editor')
+    const [blockCount, setBlockCount] = useState(0)
     const { isGamified } = useAppStore()
 
     const { getElapsedTime } = useTimeTracker({
@@ -45,6 +48,7 @@ export default function Chapter7Page({ isEmbedded = false }: Chapter7PageProps) 
 
     const handleCommandsGenerated = useCallback((newCommands: ExecutionCommand[]) => {
         setCommands(newCommands)
+        setBlockCount(blocklyRef.current?.getBlockCount() ?? 0)
     }, [])
 
     const handleExecute = useCallback(() => {
@@ -72,53 +76,147 @@ export default function Chapter7Page({ isEmbedded = false }: Chapter7PageProps) 
         }
     }, [getElapsedTime, isEmbedded])
 
-    // Minimalist embedded view - just the game
+    // Embedded mobile-optimised view — tab layout with fixed bottom bar
     if (isEmbedded) {
+        const hasCode = commands.length > 0
+
         return (
-            <div className="h-screen w-screen bg-gradient-to-br from-slate-900 to-slate-800 flex flex-col overflow-hidden">
-                {/* Blockly Workspace - Expanded (70% on mobile, 60% on desktop) */}
-                <div className="flex-[7] md:flex-[6] bg-slate-800/30 backdrop-blur-sm border-b border-slate-700/30 overflow-hidden">
-                    <BlocklyWorkspace
-                        onCommandsGenerated={handleCommandsGenerated}
-                        onExecute={handleExecute}
-                        isRunning={isRunning}
-                    />
+            <div className="h-screen w-screen bg-slate-900 flex flex-col overflow-hidden select-none">
+
+                {/* ── Tab Content ────────────────────────────────────── */}
+                <div className="flex-1 min-h-0 relative">
+
+                    {/* Editor Tab */}
+                    <div className={`absolute inset-0 ${activeTab === 'editor' ? 'flex' : 'hidden'}`}>
+                        <BlocklyWorkspace
+                            ref={blocklyRef}
+                            onCommandsGenerated={handleCommandsGenerated}
+                            onExecute={handleExecute}
+                            isRunning={isRunning}
+                            hideControls
+                        />
+                    </div>
+
+                    {/* Output Tab */}
+                    <div className={`absolute inset-0 overflow-y-auto overflow-x-hidden bg-slate-900 ${activeTab === 'output' ? 'flex flex-col' : 'hidden'}`}>
+                        <div className="flex flex-col items-center gap-4 p-4 pb-2">
+                            {/* Status badge */}
+                            <div className="w-full flex items-center justify-between">
+                                <span className="text-white/70 text-sm font-semibold">🎬 Visual Stage</span>
+                                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${isRunning ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'}`}>
+                                    {isRunning ? '▶ Berjalan...' : '⏸ Siap'}
+                                </span>
+                            </div>
+
+                            {/* Canvas */}
+                            <div className="w-full bg-white rounded-2xl shadow-xl overflow-hidden border-4 border-purple-200/50">
+                                <VisualStage
+                                    ref={stageRef}
+                                    width={window.innerWidth - 32}
+                                    height={window.innerWidth - 32}
+                                    onExecutionStart={handleExecutionStart}
+                                    onExecutionComplete={handleExecutionComplete}
+                                />
+                            </div>
+
+                            {/* Tips */}
+                            <details className="w-full bg-slate-800/60 rounded-xl border border-slate-700/40">
+                                <summary className="px-4 py-3 text-white/60 text-xs cursor-pointer hover:text-white/80 transition-colors">
+                                    💡 Tips &amp; Cara Pakai
+                                </summary>
+                                <div className="px-4 pb-3 text-white/50 text-xs space-y-1.5 pt-1">
+                                    <p>• Buka tab <strong className="text-white/70">Editor</strong> untuk menyusun blok</p>
+                                    <p>• Tekan <strong className="text-white/70">▶ Jalankan</strong> di bawah untuk menjalankan program</p>
+                                    <p>• Gunakan blok <strong className="text-white/70">"Ulangi"</strong> agar kode lebih ringkas</p>
+                                    <p>• Tekan <strong className="text-white/70">↺ Reset</strong> pada stage untuk kembalikan kucing</p>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
                 </div>
 
-                {/* Visual Stage - Scrollable Output (30% on mobile, 40% on desktop) */}
-                <div className="flex-[3] md:flex-[4] bg-slate-900/40 border-t border-slate-700/50 overflow-y-auto overflow-x-hidden">
-                    <div className="flex flex-col items-center p-3 gap-2">
-                        {/* Stage Title */}
-                        <div className="w-full flex items-center justify-between px-2">
-                            <h3 className="text-white/80 text-sm font-semibold">📺 Output</h3>
-                            <div className="text-white/50 text-xs">
-                                {isRunning ? '▶️ Running...' : '⏸️ Ready'}
+                {/* ── Fixed Bottom Bar ────────────────────────────────── */}
+                <div className="flex-shrink-0 bg-slate-800 border-t border-slate-700/60 safe-area-inset-bottom">
+
+                    {/* Action buttons — only visible on editor tab */}
+                    {activeTab === 'editor' && (
+                        <div className="flex items-center gap-2 px-3 pt-2 pb-1">
+                            {/* Run */}
+                            <button
+                                onClick={() => {
+                                    handleExecute()
+                                    setActiveTab('output')
+                                }}
+                                disabled={isRunning || !hasCode}
+                                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600
+                                           text-white font-bold rounded-xl text-sm shadow
+                                           disabled:opacity-40 disabled:cursor-not-allowed
+                                           active:scale-95 transition-all duration-150"
+                            >
+                                <span>{isRunning ? '⏳' : '▶'}</span>
+                                {isRunning ? 'Berjalan...' : 'Jalankan'}
+                            </button>
+
+                            {/* Clear */}
+                            <button
+                                onClick={() => blocklyRef.current?.clear()}
+                                disabled={isRunning}
+                                className="flex items-center justify-center gap-1 px-3 py-2.5 bg-red-600/80 text-white font-semibold rounded-xl text-sm
+                                           disabled:opacity-40 active:scale-95 transition-all duration-150"
+                                title="Hapus Semua"
+                            >
+                                🗑️
+                            </button>
+
+                            {/* Undo */}
+                            <button
+                                onClick={() => blocklyRef.current?.undo()}
+                                className="flex items-center justify-center px-3 py-2.5 bg-slate-700 text-white rounded-xl text-sm
+                                           active:scale-95 transition-all duration-150"
+                                title="Undo"
+                            >
+                                ↩️
+                            </button>
+
+                            {/* Redo */}
+                            <button
+                                onClick={() => blocklyRef.current?.redo()}
+                                className="flex items-center justify-center px-3 py-2.5 bg-slate-700 text-white rounded-xl text-sm
+                                           active:scale-95 transition-all duration-150"
+                                title="Redo"
+                            >
+                                ↪️
+                            </button>
+
+                            {/* Block count chip */}
+                            <div className="flex items-center gap-1 px-2 py-2.5 bg-slate-700/60 rounded-xl text-xs text-slate-300 font-medium whitespace-nowrap">
+                                🧱 {blockCount}
                             </div>
                         </div>
+                    )}
 
-                        {/* Visual Stage Canvas */}
-                        <div className="bg-slate-800/50 rounded-lg p-2 border border-slate-700/30 shadow-lg">
-                            <VisualStage
-                                ref={stageRef}
-                                width={Math.min(380, window.innerWidth - 60)}
-                                height={Math.min(320, window.innerWidth - 60)}
-                                onExecutionStart={handleExecutionStart}
-                                onExecutionComplete={handleExecutionComplete}
-                            />
-                        </div>
-
-                        {/* Instructions (Collapsible) */}
-                        <details className="w-full bg-slate-800/30 rounded-lg border border-slate-700/30 mt-2">
-                            <summary className="px-3 py-2 text-white/60 text-xs cursor-pointer hover:bg-slate-700/30 rounded-lg transition">
-                                💡 Tips & Shortcut
-                            </summary>
-                            <div className="px-3 py-2 text-white/50 text-xs space-y-1">
-                                <p>• Drag blok dari toolbox ke workspace</p>
-                                <p>• Klik tombol hijau ▶️ untuk run</p>
-                                <p>• Gunakan "Ulangi" untuk loop</p>
-                                <p>• Scroll area ini untuk lihat output</p>
-                            </div>
-                        </details>
+                    {/* Tab switcher */}
+                    <div className="flex gap-2 px-3 pt-1 pb-3">
+                        <button
+                            onClick={() => setActiveTab('editor')}
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-sm font-semibold transition-all duration-200
+                                ${activeTab === 'editor'
+                                    ? 'bg-indigo-600 text-white shadow'
+                                    : 'bg-slate-700/50 text-slate-400 hover:text-white'
+                                }`}
+                        >
+                            📝 Editor
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('output')}
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-sm font-semibold transition-all duration-200
+                                ${activeTab === 'output'
+                                    ? 'bg-purple-600 text-white shadow'
+                                    : 'bg-slate-700/50 text-slate-400 hover:text-white'
+                                }`}
+                        >
+                            🎬 Output
+                        </button>
                     </div>
                 </div>
             </div>
