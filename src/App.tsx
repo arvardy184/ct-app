@@ -7,6 +7,7 @@ import Chapter7Page from './features/learning-modules/Chapter7Page'
 import LoginPage from './features/auth/LoginPage'
 import RegisterPage from './features/auth/RegisterPage'
 import APActivityPage from './features/learning-modules/APActivityPage'
+import RobotManualPage from './features/learning-modules/RobotManualPage'
 
 function App() {
     return (
@@ -31,7 +32,7 @@ function App() {
             <Route path="/embed/ap-k7-02" element={<APActivityPage activityId="ap-k7-02" />} />
             <Route path="/embed/ap-k7-03" element={<APActivityPage activityId="ap-k7-03" />} />
             <Route path="/embed/ap-k7-04" element={<APActivityPage activityId="ap-k7-04" />} />
-            <Route path="/embed/ap-k7-08" element={<APActivityPage activityId="ap-k7-08" />} />
+            <Route path="/embed/ap-k7-08" element={<RobotManualPage />} />
         </Routes>
     )
 }
