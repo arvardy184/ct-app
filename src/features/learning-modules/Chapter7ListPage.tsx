@@ -1,5 +1,7 @@
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAppStore } from '../../stores/useAppStore'
+import { supabase, getCompletedActivities } from '../../lib/supabase'
 
 const activities = [
     {
@@ -43,6 +45,15 @@ const activities = [
 export default function Chapter7ListPage() {
     const { isGamified, userSession } = useAppStore()
     const navigate = useNavigate()
+    const [completed, setCompleted] = useState<Set<string>>(new Set())
+
+    useEffect(() => {
+        supabase.auth.getSession().then(({ data }) => {
+            if (data.session?.user?.id) {
+                getCompletedActivities(data.session.user.id).then(setCompleted)
+            }
+        })
+    }, [])
 
     return (
         <div className="space-y-6 animate-fade-in">
@@ -101,8 +112,11 @@ export default function Chapter7ListPage() {
                             </p>
                         </div>
 
-                        {/* Arrow */}
-                        <span className="text-white/25 text-2xl group-hover:text-white/50 transition-colors flex-shrink-0">›</span>
+                        {/* Done badge / Arrow */}
+                        {completed.has(activity.code)
+                            ? <span className="flex-shrink-0 w-7 h-7 rounded-full bg-green-500/20 border border-green-500/40 flex items-center justify-center text-green-400 text-sm font-bold">✓</span>
+                            : <span className="text-white/25 text-2xl group-hover:text-white/50 transition-colors flex-shrink-0">›</span>
+                        }
                     </button>
                 ))}
             </div>

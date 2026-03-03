@@ -1,10 +1,11 @@
 import { useRef, useState, useCallback, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import BlocklyWorkspace, { BlocklyWorkspaceRef } from '../../components/blockly/BlocklyWorkspace'
 import VisualStage, { VisualStageRef } from '../../components/stage/VisualStage'
 import { useTimeTracker } from '../../hooks/useTimeTracker'
 import { useAppStore } from '../../stores/useAppStore'
 import { sendToNative, isWebView } from '../../lib/bridge'
-import { setAuthTokenFromNative } from '../../lib/supabase'
+import { setAuthTokenFromNative, logActivity, supabase } from '../../lib/supabase'
 import type { ExecutionCommand } from '../../types'
 
 // ─── Per-activity configuration ──────────────────────────────────────────────
@@ -57,19 +58,6 @@ const ACTIVITY_CONFIGS: Record<string, ActivityConfig> = {
         ],
         color: 'from-purple-500 to-pink-600',
     },
-    'ap-k7-08': {
-        title: 'AP-K7-08-U: Bermain Robot Manual',
-        icon: '🤖',
-        challenge: 'Navigasikan robot melewati jalur tanpa keluar!',
-        objective: 'Program kucing agar bergerak dari posisi awal (kiri atas) ke tujuan (kanan bawah) mengikuti jalur grid tanpa keluar batas.',
-        tips: [
-            'Perhatikan posisi X dan Y yang ditampilkan di stage',
-            'Setiap "Gerak Maju 10" = 1 kotak grid ke depan',
-            'Rencanakan rute dulu sebelum membuat blok',
-            'Gunakan "Putar 90°" untuk berbelok di persimpangan',
-        ],
-        color: 'from-orange-500 to-red-600',
-    },
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -88,6 +76,7 @@ export default function APActivityPage({ activityId }: APActivityPageProps) {
     const [blockCount, setBlockCount] = useState(0)
     const [showChallenge, setShowChallenge] = useState(true)
 
+    const navigate = useNavigate()
     const { isGamified } = useAppStore()
     const { getElapsedTime } = useTimeTracker({ activityName: activityId, autoStart: true })
 
@@ -120,11 +109,18 @@ export default function APActivityPage({ activityId }: APActivityPageProps) {
 
     const handleExecutionComplete = useCallback(() => {
         setIsRunning(false)
-        sendToNative({
-            type: 'ACTIVITY_COMPLETE',
-            data: { score: Math.max(10, 50 - blockCount), timeSpent: getElapsedTime() },
-        })
-    }, [getElapsedTime, blockCount])
+        const score = Math.max(10, 50 - blockCount)
+        if (isWebView()) {
+            sendToNative({ type: 'ACTIVITY_COMPLETE', data: { score, timeSpent: getElapsedTime() } })
+        } else {
+            // Browser mode: log directly to Supabase
+            supabase.auth.getSession().then(({ data }) => {
+                if (data.session?.user?.id) {
+                    logActivity(data.session.user.id, activityId.toUpperCase(), getElapsedTime(), 1, score, true)
+                }
+            })
+        }
+    }, [getElapsedTime, blockCount, activityId])
 
     const hasCode = commands.length > 0
 
@@ -135,6 +131,12 @@ export default function APActivityPage({ activityId }: APActivityPageProps) {
             {showChallenge && (
                 <div className={`flex-shrink-0 bg-gradient-to-r ${config.color} p-3`}>
                     <div className="flex items-start gap-3">
+                        {!isWebView() && (
+                            <button
+                                onClick={() => navigate(-1)}
+                                className="flex-shrink-0 mt-0.5 px-2 py-0.5 bg-black/25 hover:bg-black/40 text-white text-xs font-semibold rounded-md active:scale-95 transition-all duration-150"
+                            >← Kembali</button>
+                        )}
                         <span className="text-2xl flex-shrink-0">{config.icon}</span>
                         <div className="flex-1 min-w-0">
                             <p className="text-white font-bold text-sm leading-tight">{config.challenge}</p>

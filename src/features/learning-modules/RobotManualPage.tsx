@@ -1,4 +1,5 @@
-import { useRef, useState, useCallback, useEffect } from 'react'
+import { useRef, useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import * as Blockly from 'blockly'
 import { javascriptGenerator } from 'blockly/javascript'
 import { Stage, Layer, Rect, Text, Group, Circle, Arrow } from 'react-konva'
@@ -7,7 +8,7 @@ import type { RobotCommand } from '../../components/blockly/robotBlocks'
 import { useTimeTracker } from '../../hooks/useTimeTracker'
 import { useAppStore } from '../../stores/useAppStore'
 import { sendToNative, isWebView } from '../../lib/bridge'
-import { setAuthTokenFromNative } from '../../lib/supabase'
+import { setAuthTokenFromNative, logActivity, supabase } from '../../lib/supabase'
 
 registerRobotBlocks()
 
@@ -172,58 +173,6 @@ function RobotGridStage({
     )
 }
 
-// ── Robot Blockly Workspace ───────────────────────────────────────────────────
-function RobotWorkspace({
-    onCodeChange,
-    workspaceStateRef,
-}: {
-    onCodeChange: (code: string) => void
-    workspaceStateRef: React.MutableRefObject<string>
-}) {
-    const divRef = useRef<HTMLDivElement>(null)
-    const wsRef  = useRef<Blockly.WorkspaceSvg | null>(null)
-
-    useEffect(() => {
-        if (!divRef.current || wsRef.current) return
-
-        wsRef.current = Blockly.inject(divRef.current, {
-            toolbox: robotToolboxConfig,
-            grid: { spacing: 20, length: 2, colour: '#e0e0e0', snap: true },
-            zoom: { controls: true, wheel: true, startScale: 0.9, maxScale: 1.8, minScale: 0.5 },
-            trashcan: true,
-            scrollbars: true,
-            sounds: false,
-            renderer: 'zelos',
-            theme: Blockly.Theme.defineTheme('robot', {
-                name: 'robot',
-                base: Blockly.Themes.Classic,
-                componentStyles: {
-                    workspaceBackgroundColour: '#f1f5f9',
-                    toolboxBackgroundColour: '#1e293b',
-                    toolboxForegroundColour: '#ffffff',
-                    flyoutBackgroundColour: '#334155',
-                    flyoutForegroundColour: '#ffffff',
-                    flyoutOpacity: 0.97,
-                },
-            }),
-        })
-
-        wsRef.current.addChangeListener(() => {
-            if (!wsRef.current) return
-            const code = javascriptGenerator.workspaceToCode(wsRef.current)
-            workspaceStateRef.current = code
-            onCodeChange(code)
-        })
-
-        return () => { wsRef.current?.dispose(); wsRef.current = null }
-    }, [])
-
-    // Expose save/load via imperative approach
-    ;(RobotWorkspace as any)._wsRef = wsRef
-
-    return <div ref={divRef} className="w-full h-full" />
-}
-
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function RobotManualPage() {
     const STEP_DELAY = 280 // ms per grid step
@@ -241,6 +190,7 @@ export default function RobotManualPage() {
     const [activeTab, setActiveTab] = useState<'editor' | 'grid'>('editor')
     const [allReached, setAllReached] = useState(false)
 
+    const navigate = useNavigate()
     const { isGamified } = useAppStore()
     const { getElapsedTime } = useTimeTracker({ activityName: 'ap-k7-08', autoStart: true })
 
@@ -415,7 +365,16 @@ export default function RobotManualPage() {
             ).length
             if (reached === SPRITE_DEFS.length) {
                 setAllReached(true)
-                sendToNative({ type: 'ACTIVITY_COMPLETE', data: { score: 50, timeSpent: getElapsedTime() } })
+                if (isWebView()) {
+                    sendToNative({ type: 'ACTIVITY_COMPLETE', data: { score: 50, timeSpent: getElapsedTime() } })
+                } else {
+                    // Browser mode: log directly to Supabase
+                    supabase.auth.getSession().then(({ data }) => {
+                        if (data.session?.user?.id) {
+                            logActivity(data.session.user.id, 'AP-K7-08-U', getElapsedTime(), 1, 50, true)
+                        }
+                    })
+                }
             }
         } finally {
             setIsRunning(false)
@@ -437,8 +396,18 @@ export default function RobotManualPage() {
 
             {/* ── Challenge banner ─────────────────────────────────── */}
             <div className="flex-shrink-0 bg-gradient-to-r from-orange-600 to-red-600 px-3 py-2">
-                <p className="text-white font-bold text-sm">🤖 AP-K7-08-U: Bermain Robot Manual</p>
-                <p className="text-white/80 text-xs mt-0.5">Program ke-4 sprite agar mencapai titik <strong>Finish (H7)</strong>. Pilih sprite lalu susun blok.</p>
+                <div className="flex items-start gap-2">
+                    {!isWebView() && (
+                        <button
+                            onClick={() => navigate(-1)}
+                            className="flex-shrink-0 mt-0.5 px-2 py-0.5 bg-black/25 hover:bg-black/40 text-white text-xs font-semibold rounded-md active:scale-95 transition-all duration-150"
+                        >← Kembali</button>
+                    )}
+                    <div className="flex-1">
+                        <p className="text-white font-bold text-sm">🤖 AP-K7-08-U: Bermain Robot Manual</p>
+                        <p className="text-white/80 text-xs mt-0.5">Program ke-4 sprite agar mencapai titik <strong>Finish (H7)</strong>. Pilih sprite lalu susun blok.</p>
+                    </div>
+                </div>
             </div>
 
             {/* ── Sprite selector ──────────────────────────────────── */}

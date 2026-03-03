@@ -114,7 +114,9 @@ export async function logActivity(
     userId: string,
     activityName: string,
     timeSpentSeconds: number,
-    attemptCount: number
+    attemptCount: number,
+    score?: number,
+    completed?: boolean,
 ) {
     const { data, error } = await supabase
         .from('activity_logs')
@@ -123,6 +125,8 @@ export async function logActivity(
             activity_name: activityName,
             time_spent_seconds: timeSpentSeconds,
             attempt_count: attemptCount,
+            ...(score !== undefined && { score }),
+            completed: completed ?? false,
         })
 
     if (error) {
@@ -168,6 +172,16 @@ export async function getProfile(userId: string) {
         return null
     }
     return data
+}
+
+// Get set of activity_names the user has completed (any log = done)
+export async function getCompletedActivities(userId: string): Promise<Set<string>> {
+    const { data, error } = await supabase
+        .from('activity_logs')
+        .select('activity_name')
+        .eq('user_id', userId)
+    if (error || !data) return new Set()
+    return new Set(data.map(r => r.activity_name as string))
 }
 
 // ===== SQL Schema (run this in Supabase SQL Editor) =====

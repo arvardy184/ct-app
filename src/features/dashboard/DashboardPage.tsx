@@ -1,10 +1,20 @@
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAppStore } from '../../stores/useAppStore'
-import { signOut } from '../../lib/supabase'
+import { signOut, supabase, getCompletedActivities } from '../../lib/supabase'
 
 export default function DashboardPage() {
     const { userSession, isGamified } = useAppStore()
     const navigate = useNavigate()
+    const [completedCount, setCompletedCount] = useState(0)
+
+    useEffect(() => {
+        supabase.auth.getSession().then(({ data }) => {
+            if (data.session?.user?.id) {
+                getCompletedActivities(data.session.user.id).then((s) => setCompletedCount(s.size))
+            }
+        })
+    }, [])
 
     async function handleSignOut() {
         await signOut()
@@ -81,7 +91,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="bg-gradient-to-br from-blue-600/20 to-blue-800/20 backdrop-blur-sm 
                           border border-blue-500/30 rounded-2xl p-6 text-center">
-                        <p className="text-4xl font-bold text-white">0</p>
+                        <p className="text-4xl font-bold text-white">{completedCount}</p>
                         <p className="text-blue-300">Completed</p>
                     </div>
                 </section>
