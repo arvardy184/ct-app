@@ -5,6 +5,7 @@ const navItems = [
   { path: '/admin', label: 'Dashboard', icon: '📊' },
   { path: '/admin/users', label: 'Siswa', icon: '👥' },
   { path: '/admin/logs', label: 'Activity Logs', icon: '📋' },
+  { path: '/admin/questions', label: 'Manajemen Soal', icon: '📝' },
 ]
 
 export default function AdminLayout() {

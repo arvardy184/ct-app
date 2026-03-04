@@ -119,7 +119,51 @@ CREATE POLICY "Users can update own sessions" ON experiment_sessions
   FOR UPDATE USING (auth.uid() = user_id);
 
 -- ============================================
--- 5. ADMIN READ-ALL POLICIES
+-- 5. QUESTIONS TABLE
+-- Pretest & Post-test multiple choice questions
+-- Managed by admin, read-only for students/mobile
+-- ============================================
+CREATE TABLE IF NOT EXISTS questions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  question_text TEXT NOT NULL,
+  -- options stored as JSONB array: [{label: 'A', text: '...'}, ...]
+  options JSONB NOT NULL DEFAULT '[]',
+  correct_answer TEXT NOT NULL, -- 'A', 'B', 'C', or 'D'
+  type TEXT CHECK (type IN ('pretest', 'posttest')) NOT NULL,
+  chapter TEXT CHECK (chapter IN ('chapter2', 'chapter7')) NOT NULL,
+  order_index INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Add RLS
+ALTER TABLE questions ENABLE ROW LEVEL SECURITY;
+
+-- All authenticated users (students + mobile) can READ
+CREATE POLICY "Authenticated users can read questions" ON questions
+  FOR SELECT USING (auth.role() = 'authenticated');
+
+-- Only admin can INSERT / UPDATE / DELETE
+CREATE POLICY "Admin can insert questions" ON questions
+  FOR INSERT WITH CHECK (auth.jwt() ->> 'email' = 'admin@gmail.com');
+
+CREATE POLICY "Admin can update questions" ON questions
+  FOR UPDATE USING (auth.jwt() ->> 'email' = 'admin@gmail.com');
+
+CREATE POLICY "Admin can delete questions" ON questions
+  FOR DELETE USING (auth.jwt() ->> 'email' = 'admin@gmail.com');
+
+-- Trigger for updated_at
+CREATE TRIGGER questions_updated_at
+  BEFORE UPDATE ON questions
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- Index for efficient filtering
+CREATE INDEX idx_questions_type_chapter ON questions(type, chapter);
+CREATE INDEX idx_questions_order ON questions(chapter, type, order_index);
+
+-- ============================================
+-- 6. ADMIN READ-ALL POLICIES
 -- Allows admin@gmail.com to read all rows
 -- Run this in Supabase SQL Editor
 -- ============================================

@@ -14,6 +14,7 @@ import AdminLayout from './features/admin/AdminLayout'
 import AdminDashboardPage from './features/admin/AdminDashboardPage'
 import AdminUsersPage from './features/admin/AdminUsersPage'
 import AdminLogsPage from './features/admin/AdminLogsPage'
+import AdminQuestionsPage from './features/admin/AdminQuestionsPage'
 
 function App() {
     return (
@@ -42,6 +43,7 @@ function App() {
                 <Route index element={<AdminDashboardPage />} />
                 <Route path="users" element={<AdminUsersPage />} />
                 <Route path="logs" element={<AdminLogsPage />} />
+                <Route path="questions" element={<AdminQuestionsPage />} />
             </Route>
 
             {/* ── Embedded Routes (React Native WebView — no auth guard, token injected) ── */}
