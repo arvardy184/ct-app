@@ -38,79 +38,101 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceRef, BlocklyWorkspaceProps>(
 
     // Initialize Blockly workspace
     useEffect(() => {
-        if (blocklyDiv.current && !workspaceRef.current) {
-            workspaceRef.current = Blockly.inject(blocklyDiv.current, {
-                toolbox: toolboxConfig,
-                grid: {
-                    spacing: 25,
-                    length: 3,
-                    colour: '#e2e8f0', // slate-200
-                    snap: true
+        if (!blocklyDiv.current || workspaceRef.current) return
+
+        const workspace = Blockly.inject(blocklyDiv.current, {
+            toolbox: toolboxConfig,
+            grid: {
+                spacing: 25,
+                length: 3,
+                colour: '#e2e8f0', // slate-200
+                snap: true
+            },
+            zoom: {
+                controls: true,
+                wheel: true,
+                startScale: 0.9,
+                maxScale: 2,
+                minScale: 0.4,
+                scaleSpeed: 1.2
+            },
+            trashcan: true,
+            scrollbars: true,
+            sounds: false,
+            renderer: 'zelos',
+            theme: Blockly.Theme.defineTheme('scratch_light', {
+                name: 'scratch_light',
+                base: Blockly.Themes.Classic,
+                componentStyles: {
+                    workspaceBackgroundColour: '#f8fafc', // slate-50
+                    toolboxBackgroundColour: '#ffffff',
+                    toolboxForegroundColour: '#334155', // slate-700
+                    flyoutBackgroundColour: '#f1f5f9', // slate-100
+                    flyoutForegroundColour: '#1e293b', // slate-800
+                    flyoutOpacity: 0.95,
+                    scrollbarColour: '#cbd5e1', // slate-300
+                    insertionMarkerColour: '#000',
+                    insertionMarkerOpacity: 0.2,
+                    scrollbarOpacity: 0.8,
+                    cursorColour: '#94a3b8', // slate-400
                 },
-                zoom: {
-                    controls: true,
-                    wheel: true,
-                    startScale: 0.9,
-                    maxScale: 2,
-                    minScale: 0.4,
-                    scaleSpeed: 1.2
+                fontStyle: {
+                    family: 'Inter, sans-serif',
+                    weight: 'bold',
+                    size: 12,
                 },
-                trashcan: true,
-                scrollbars: true,
-                sounds: false,
-                renderer: 'zelos',
-                theme: Blockly.Theme.defineTheme('scratch_light', {
-                    name: 'scratch_light',
-                    base: Blockly.Themes.Classic,
-                    componentStyles: {
-                        workspaceBackgroundColour: '#f8fafc', // slate-50
-                        toolboxBackgroundColour: '#ffffff',
-                        toolboxForegroundColour: '#334155', // slate-700
-                        flyoutBackgroundColour: '#f1f5f9', // slate-100
-                        flyoutForegroundColour: '#1e293b', // slate-800
-                        flyoutOpacity: 0.95,
-                        scrollbarColour: '#cbd5e1', // slate-300
-                        insertionMarkerColour: '#000',
-                        insertionMarkerOpacity: 0.2,
-                        scrollbarOpacity: 0.8,
-                        cursorColour: '#94a3b8', // slate-400
-                    },
-                    fontStyle: {
-                        family: 'Inter, sans-serif',
-                        weight: 'bold',
-                        size: 12,
-                    },
-                }),
-            })
+            }),
+        })
+        workspaceRef.current = workspace
 
-            // Listen for workspace changes
-            workspaceRef.current.addChangeListener((event) => {
-                if (event.type === Blockly.Events.BLOCK_MOVE ||
-                    event.type === Blockly.Events.BLOCK_CHANGE ||
-                    event.type === Blockly.Events.BLOCK_DELETE ||
-                    event.type === Blockly.Events.BLOCK_CREATE) {
-                    if (workspaceRef.current) {
-                        const code = javascriptGenerator.workspaceToCode(workspaceRef.current)
-                        setGeneratedCode(code)
-                        onCodeGenerated?.(code)
+        // Force correct sizing after layout settles (flex/absolute containers can report 0 on first paint)
+        const rafId = requestAnimationFrame(() => {
+            if (workspaceRef.current) Blockly.svgResize(workspaceRef.current)
+        })
 
-                        const blocks = workspaceRef.current.getAllBlocks(false)
-                        setBlockCount(blocks.length)
+        // Keep Blockly sized when the container is resized (e.g. challenge banner toggle)
+        const resizeObserver = new ResizeObserver(() => {
+            if (workspaceRef.current) Blockly.svgResize(workspaceRef.current)
+        })
+        resizeObserver.observe(blocklyDiv.current)
 
-                        const commands = parseCommands(code)
-                        onCommandsGenerated?.(commands)
-                    }
-                }
-            })
+        // Also handle browser window resize
+        const handleWindowResize = () => {
+            if (workspaceRef.current) Blockly.svgResize(workspaceRef.current)
         }
+        window.addEventListener('resize', handleWindowResize)
+
+        // Listen for workspace changes
+        workspace.addChangeListener((event) => {
+            if (event.type === Blockly.Events.BLOCK_MOVE ||
+                event.type === Blockly.Events.BLOCK_CHANGE ||
+                event.type === Blockly.Events.BLOCK_DELETE ||
+                event.type === Blockly.Events.BLOCK_CREATE) {
+                if (workspaceRef.current) {
+                    const code = javascriptGenerator.workspaceToCode(workspaceRef.current)
+                    setGeneratedCode(code)
+                    onCodeGenerated?.(code)
+
+                    const blocks = workspaceRef.current.getAllBlocks(false)
+                    setBlockCount(blocks.length)
+
+                    const commands = parseCommands(code)
+                    onCommandsGenerated?.(commands)
+                }
+            }
+        })
 
         return () => {
+            cancelAnimationFrame(rafId)
+            resizeObserver.disconnect()
+            window.removeEventListener('resize', handleWindowResize)
             if (workspaceRef.current) {
                 workspaceRef.current.dispose()
                 workspaceRef.current = null
             }
         }
-    }, [onCodeGenerated, onCommandsGenerated])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     const parseCommands = (code: string): ExecutionCommand[] => {
         const commands: ExecutionCommand[] = []
@@ -154,7 +176,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceRef, BlocklyWorkspaceProps>(
     }), [clearWorkspace, undo, redo, blockCount, generatedCode])
 
     return (
-        <div className="flex flex-col h-full gap-3 p-2 bg-slate-50">
+        <div className="flex flex-col w-full h-full gap-3 p-2 bg-slate-50">
             {/* Control Buttons — hanya tampil di mode desktop */}
             {!hideControls && (
                 <div className="flex items-center justify-between flex-shrink-0 bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
