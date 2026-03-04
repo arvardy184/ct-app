@@ -15,6 +15,7 @@ import AdminDashboardPage from './features/admin/AdminDashboardPage'
 import AdminUsersPage from './features/admin/AdminUsersPage'
 import AdminLogsPage from './features/admin/AdminLogsPage'
 import AdminQuestionsPage from './features/admin/AdminQuestionsPage'
+import TestPage from './features/learning-modules/TestPage'
 
 function App() {
     return (
@@ -32,6 +33,7 @@ function App() {
                 <Route index element={<DashboardPage />} />
                 <Route path="chapter2" element={<Chapter2Page />} />
                 <Route path="chapter7" element={<Chapter7ListPage />} />
+                <Route path="test/:type/:chapter" element={<TestPage />} />
             </Route>
 
             {/* ── Admin Routes ── */}

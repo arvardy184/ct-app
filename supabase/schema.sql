@@ -163,7 +163,39 @@ CREATE INDEX idx_questions_type_chapter ON questions(type, chapter);
 CREATE INDEX idx_questions_order ON questions(chapter, type, order_index);
 
 -- ============================================
--- 6. ADMIN READ-ALL POLICIES
+-- 6. TEST RESULTS TABLE
+-- Stores pretest & posttest scores per student
+-- ============================================
+CREATE TABLE IF NOT EXISTS test_results (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  chapter TEXT CHECK (chapter IN ('chapter2', 'chapter7')) NOT NULL,
+  type TEXT CHECK (type IN ('pretest', 'posttest')) NOT NULL,
+  score INTEGER NOT NULL DEFAULT 0,    -- jumlah jawaban benar
+  total INTEGER NOT NULL DEFAULT 0,    -- total soal
+  answers JSONB DEFAULT '{}',          -- {question_id: 'A'|'B'|'C'|'D'}
+  completed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Add RLS
+ALTER TABLE test_results ENABLE ROW LEVEL SECURITY;
+
+-- Students can insert and view their own results
+CREATE POLICY "Users can insert own test results" ON test_results
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can view own test results" ON test_results
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- Admin can read all
+CREATE POLICY "Admin can read all test results" ON test_results
+  FOR SELECT USING (auth.jwt() ->> 'email' = 'admin@gmail.com');
+
+-- Index for fast lookup
+CREATE INDEX idx_test_results_user_chapter ON test_results(user_id, chapter, type);
+
+-- ============================================
+-- 7. ADMIN READ-ALL POLICIES
 -- Allows admin@gmail.com to read all rows
 -- Run this in Supabase SQL Editor
 -- ============================================

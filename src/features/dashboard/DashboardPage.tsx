@@ -2,19 +2,28 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAppStore } from '../../stores/useAppStore'
 import { signOut, supabase, getCompletedActivities } from '../../lib/supabase'
+import { fetchMyTestResults, type TestResult } from '../../lib/testService'
+import type { QuestionChapter } from '../../lib/questionService'
 
 export default function DashboardPage() {
     const { userSession, isGamified } = useAppStore()
     const navigate = useNavigate()
     const [completedCount, setCompletedCount] = useState(0)
+    const [testResults, setTestResults] = useState<TestResult[]>([])
 
     useEffect(() => {
         supabase.auth.getSession().then(({ data }) => {
-            if (data.session?.user?.id) {
-                getCompletedActivities(data.session.user.id).then((s) => setCompletedCount(s.size))
+            const uid = data.session?.user?.id
+            if (uid) {
+                getCompletedActivities(uid).then((s) => setCompletedCount(s.size))
+                fetchMyTestResults(uid).then(setTestResults)
             }
         })
     }, [])
+
+    function getTestResult(chapter: QuestionChapter, type: 'pretest' | 'posttest') {
+        return testResults.find(r => r.chapter === chapter && r.type === type) ?? null
+    }
 
     async function handleSignOut() {
         await signOut()
@@ -142,6 +151,45 @@ export default function DashboardPage() {
                 </div>
             </section>
 
+            {/* Pretest & Posttest */}
+            <section>
+                <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-3">
+                    <span>📋</span> Pre-test & Post-test
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {modules.map((module) => {
+                        const ch = module.id as QuestionChapter
+                        const preResult = getTestResult(ch, 'pretest')
+                        const postResult = getTestResult(ch, 'posttest')
+                        return (
+                            <div
+                                key={module.id}
+                                className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <span className="text-2xl">{module.icon}</span>
+                                    <h3 className="font-bold text-slate-800">{module.title}</h3>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <TestButton
+                                        label="Pre-test"
+                                        path={`/test/pretest/${module.id}`}
+                                        result={preResult}
+                                        color="sky"
+                                    />
+                                    <TestButton
+                                        label="Post-test"
+                                        path={`/test/posttest/${module.id}`}
+                                        result={postResult}
+                                        color="violet"
+                                    />
+                                </div>
+                            </div>
+                        )
+                    })}
+                </div>
+            </section>
+
             {/* Achievements (Gamified only) */}
             {isGamified && (
                 <section>
@@ -193,6 +241,66 @@ export default function DashboardPage() {
                     </span>
                 </div>
             </section>
+        </div>
+    )
+}
+
+// ─── Helper Component ──────────────────────────────────────────────────────
+
+function TestButton({
+    label,
+    path,
+    result,
+    color,
+}: {
+    label: string
+    path: string
+    result: TestResult | null
+    color: 'sky' | 'violet'
+}) {
+    const colorMap = {
+        sky: {
+            badge: 'bg-sky-50 border-sky-200 text-sky-700',
+            btn: 'bg-sky-600 hover:bg-sky-700 text-white',
+            score: 'text-sky-600',
+        },
+        violet: {
+            badge: 'bg-violet-50 border-violet-200 text-violet-700',
+            btn: 'bg-violet-600 hover:bg-violet-700 text-white',
+            score: 'text-violet-600',
+        },
+    }
+    const c = colorMap[color]
+
+    return (
+        <div className={`rounded-xl border p-3 space-y-2 ${c.badge}`}>
+            <p className="text-xs font-semibold">{label}</p>
+            {result ? (
+                <>
+                    <p className={`text-2xl font-bold ${c.score}`}>
+                        {Math.round((result.score / result.total) * 100)}%
+                    </p>
+                    <p className="text-xs opacity-70">
+                        {result.score}/{result.total} benar
+                    </p>
+                    <Link
+                        to={path}
+                        className="block text-center text-xs font-medium underline opacity-70 hover:opacity-100"
+                    >
+                        Ulangi
+                    </Link>
+                </>
+            ) : (
+                <>
+                    <p className="text-xs opacity-60">Belum dikerjakan</p>
+                    <Link
+                        to={path}
+                        className={`block text-center py-1.5 px-3 rounded-lg text-xs font-semibold transition-colors ${c.btn}`}
+                    >
+                        Mulai →
+                    </Link>
+                </>
+            )}
         </div>
     )
 }
