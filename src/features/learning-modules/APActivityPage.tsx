@@ -15,7 +15,7 @@ interface ActivityConfig {
     challenge: string
     objective: string
     tips: string[]
-    color: string // Tailwind gradient classes
+    color: string
 }
 
 const ACTIVITY_CONFIGS: Record<string, ActivityConfig> = {
@@ -30,7 +30,7 @@ const ACTIVITY_CONFIGS: Record<string, ActivityConfig> = {
             'Gunakan "Putar Kanan/Kiri" untuk mengubah arah',
             'Coba beberapa kombinasi dan lihat hasilnya!',
         ],
-        color: 'from-blue-500 to-cyan-600',
+        color: 'text-blue-600 bg-blue-50 border-blue-200',
     },
     'ap-k7-03': {
         title: 'AP-K7-03: Jalan Tanpa Henti',
@@ -43,7 +43,7 @@ const ACTIVITY_CONFIGS: Record<string, ActivityConfig> = {
             'Dengan "Ulangi 4 kali": cukup 3 blok saja!',
             'Coba "Gerak Maju 10, Putar Kanan 90°" di dalam loop',
         ],
-        color: 'from-green-500 to-emerald-600',
+        color: 'text-green-600 bg-green-50 border-green-200',
     },
     'ap-k7-04': {
         title: 'AP-K7-04: Bermain dengan Suara & Lebih Natural',
@@ -56,7 +56,7 @@ const ACTIVITY_CONFIGS: Record<string, ActivityConfig> = {
             'Kombinasikan dengan "Ulangi" untuk pola berulang',
             'Bereksperimenlah dengan sudut putar yang berbeda (45°, 60°, 90°)',
         ],
-        color: 'from-purple-500 to-pink-600',
+        color: 'text-purple-600 bg-purple-50 border-purple-200',
     },
 }
 
@@ -125,34 +125,34 @@ export default function APActivityPage({ activityId }: APActivityPageProps) {
     const hasCode = commands.length > 0
 
     return (
-        <div className="h-screen w-screen bg-slate-900 flex flex-col overflow-hidden select-none">
+        <div className="h-screen w-screen bg-slate-50 flex flex-col overflow-hidden select-none">
 
             {/* ── Challenge Banner (collapsible) ─────────────────────── */}
             {showChallenge && (
-                <div className={`flex-shrink-0 bg-gradient-to-r ${config.color} p-3`}>
-                    <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 bg-white border-b border-slate-200 p-4 shadow-sm z-10 transition-all">
+                    <div className="flex items-start gap-4">
                         {!isWebView() && (
                             <button
                                 onClick={() => navigate(-1)}
-                                className="flex-shrink-0 mt-0.5 px-2 py-0.5 bg-black/25 hover:bg-black/40 text-white text-xs font-semibold rounded-md active:scale-95 transition-all duration-150"
+                                className="flex-shrink-0 mt-0.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 text-xs font-bold rounded-lg transition-all duration-150 border border-slate-200"
                             >← Kembali</button>
                         )}
-                        <span className="text-2xl flex-shrink-0">{config.icon}</span>
+                        <span className="text-3xl flex-shrink-0">{config.icon}</span>
                         <div className="flex-1 min-w-0">
-                            <p className="text-white font-bold text-sm leading-tight">{config.challenge}</p>
-                            <p className="text-white/80 text-xs mt-0.5 leading-snug">{config.objective}</p>
+                            <p className="text-slate-800 font-bold text-base leading-tight mb-0.5">{config.challenge}</p>
+                            <p className="text-slate-500 text-xs leading-relaxed">{config.objective}</p>
                         </div>
                         <button
                             onClick={() => setShowChallenge(false)}
-                            className="flex-shrink-0 text-white/70 hover:text-white text-lg leading-none"
+                            className="flex-shrink-0 text-slate-400 hover:text-slate-700 text-lg font-bold leading-none p-1 rounded-md hover:bg-slate-100 transition-colors"
                         >
                             ✕
                         </button>
                     </div>
                     {isGamified && (
-                        <div className="mt-2 flex items-center gap-1.5">
-                            <span className="px-2 py-0.5 bg-white/20 text-white text-xs rounded-full font-medium">
-                                🏆 Selesaikan tantangan untuk dapat XP!
+                        <div className="mt-3 flex items-center gap-1.5">
+                            <span className={`px-2.5 py-1 text-xs rounded-full font-bold border ${config.color}`}>
+                                🏆 Selesaikan tantangan untuk XP!
                             </span>
                         </div>
                     )}
@@ -174,18 +174,18 @@ export default function APActivityPage({ activityId }: APActivityPageProps) {
                 </div>
 
                 {/* Output Tab */}
-                <div className={`absolute inset-0 overflow-y-auto bg-slate-900 ${activeTab === 'output' ? 'flex flex-col' : 'hidden'}`}>
+                <div className={`absolute inset-0 overflow-y-auto bg-slate-50 ${activeTab === 'output' ? 'flex flex-col' : 'hidden'}`}>
                     <div className="flex flex-col items-center gap-4 p-4 pb-2">
                         {/* Status */}
                         <div className="w-full flex items-center justify-between">
-                            <span className="text-white/70 text-sm font-semibold">🎬 Visual Stage</span>
-                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${isRunning ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'}`}>
+                            <span className="text-slate-700 text-sm font-bold">🎬 Visual Stage</span>
+                            <span className={`text-xs px-2.5 py-1 rounded-full font-bold border ${isRunning ? 'bg-green-50/80 text-green-700 border-green-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
                                 {isRunning ? '▶ Berjalan...' : '⏸ Siap'}
                             </span>
                         </div>
 
                         {/* Canvas */}
-                        <div className="w-full bg-white rounded-2xl shadow-xl overflow-hidden border-4 border-purple-200/50">
+                        <div className="w-full bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-200">
                             <VisualStage
                                 ref={stageRef}
                                 width={window.innerWidth - 32}
@@ -196,13 +196,13 @@ export default function APActivityPage({ activityId }: APActivityPageProps) {
                         </div>
 
                         {/* Tips collapsible */}
-                        <details className="w-full bg-slate-800/60 rounded-xl border border-slate-700/40">
-                            <summary className="px-4 py-3 text-white/60 text-xs cursor-pointer hover:text-white/80 transition-colors">
+                        <details className="w-full bg-white rounded-xl border border-slate-200 shadow-sm">
+                            <summary className="px-4 py-3 text-slate-700 text-sm font-semibold cursor-pointer hover:bg-slate-50 transition-colors rounded-xl flex items-center gap-2">
                                 💡 Tips untuk aktivitas ini
                             </summary>
-                            <div className="px-4 pb-3 text-white/50 text-xs space-y-1.5 pt-1">
+                            <div className="px-4 pb-4 text-slate-600 text-sm font-medium space-y-2 pt-1">
                                 {config.tips.map((tip, i) => (
-                                    <p key={i}>• {tip}</p>
+                                    <p key={i}>• <span className="text-slate-700">{tip}</span></p>
                                 ))}
                             </div>
                         </details>
@@ -211,20 +211,19 @@ export default function APActivityPage({ activityId }: APActivityPageProps) {
             </div>
 
             {/* ── Fixed Bottom Bar ───────────────────────────────────── */}
-            <div className="flex-shrink-0 bg-slate-800 border-t border-slate-700/60">
+            <div className="flex-shrink-0 bg-white border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
 
                 {/* Action buttons — editor tab only */}
                 {activeTab === 'editor' && (
-                    <div className="flex items-center gap-2 px-3 pt-2 pb-1">
+                    <div className="flex items-center gap-2 px-4 pt-3 pb-1 w-full overflow-x-auto no-scrollbar">
                         {/* Run */}
                         <button
                             onClick={() => { handleExecute(); setActiveTab('output') }}
                             disabled={isRunning || !hasCode}
-                            className="flex-1 flex items-center justify-center gap-1.5 py-2.5
-                                       bg-gradient-to-r from-green-500 to-emerald-600
-                                       text-white font-bold rounded-xl text-sm shadow
-                                       disabled:opacity-40 disabled:cursor-not-allowed
-                                       active:scale-95 transition-all duration-150"
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 min-w-[120px]
+                                       bg-green-600 text-white font-bold rounded-xl text-sm shadow-sm
+                                       disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed
+                                       active:bg-green-700 hover:bg-green-700 transition-all duration-150"
                         >
                             <span>{isRunning ? '⏳' : '▶'}</span>
                             {isRunning ? 'Berjalan...' : 'Jalankan'}
@@ -232,51 +231,51 @@ export default function APActivityPage({ activityId }: APActivityPageProps) {
                         <button
                             onClick={() => blocklyRef.current?.clear()}
                             disabled={isRunning}
-                            className="px-3 py-2.5 bg-red-600/80 text-white rounded-xl text-sm
-                                       disabled:opacity-40 active:scale-95 transition-all duration-150"
+                            className="px-4 py-2.5 bg-red-50 text-red-600 hover:bg-red-100 font-bold border border-red-100 rounded-xl text-sm
+                                       disabled:opacity-40 active:scale-95 transition-all duration-150 flex-shrink-0"
                             title="Hapus Semua"
                         >🗑️</button>
                         <button
                             onClick={() => blocklyRef.current?.undo()}
-                            className="px-3 py-2.5 bg-slate-700 text-white rounded-xl text-sm
-                                       active:scale-95 transition-all duration-150"
+                            className="px-4 py-2.5 bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800 font-bold rounded-xl text-sm
+                                       active:scale-95 transition-all duration-150 flex-shrink-0"
                             title="Undo"
                         >↩️</button>
                         <button
                             onClick={() => blocklyRef.current?.redo()}
-                            className="px-3 py-2.5 bg-slate-700 text-white rounded-xl text-sm
-                                       active:scale-95 transition-all duration-150"
+                            className="px-4 py-2.5 bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800 font-bold rounded-xl text-sm
+                                       active:scale-95 transition-all duration-150 flex-shrink-0"
                             title="Redo"
                         >↪️</button>
-                        <div className="px-2 py-2.5 bg-slate-700/60 rounded-xl text-xs text-slate-300 font-medium whitespace-nowrap">
+                        <div className="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-500 font-bold whitespace-nowrap flex-shrink-0">
                             🧱 {blockCount}
                         </div>
                     </div>
                 )}
 
                 {/* Tab switcher */}
-                <div className="flex gap-2 px-3 pt-1 pb-3">
+                <div className="flex gap-3 px-4 pt-2 pb-4">
                     <button
                         onClick={() => setActiveTab('editor')}
-                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-sm font-semibold transition-all duration-200
-                            ${activeTab === 'editor' ? 'bg-indigo-600 text-white shadow' : 'bg-slate-700/50 text-slate-400'}`}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-200
+                            ${activeTab === 'editor' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:text-slate-700 hover:bg-slate-200'}`}
                     >
                         📝 Editor
                     </button>
                     <button
                         onClick={() => setActiveTab('output')}
-                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-sm font-semibold transition-all duration-200
-                            ${activeTab === 'output' ? 'bg-purple-600 text-white shadow' : 'bg-slate-700/50 text-slate-400'}`}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-200
+                            ${activeTab === 'output' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:text-slate-700 hover:bg-slate-200'}`}
                     >
                         🎬 Output
                     </button>
                     {!showChallenge && (
                         <button
                             onClick={() => setShowChallenge(true)}
-                            className={`flex items-center justify-center px-3 py-2 rounded-xl text-sm font-semibold transition-all duration-200 bg-gradient-to-r ${config.color} text-white`}
+                            className={`flex items-center justify-center px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 ${config.color} shadow-sm hover:opacity-80`}
                             title="Lihat Tantangan"
                         >
-                            🎯
+                            🎯 Target
                         </button>
                     )}
                 </div>

@@ -10,7 +10,7 @@ const activities = [
         title: 'Objek Pertama Kalian',
         description: 'Gerakkan kucing ke titik tujuan menggunakan blok Gerak Maju dan Putar.',
         emoji: '🐱',
-        color: '#3b82f6',
+        color: '#3b82f6', // blue-500
         embedPath: '/embed/ap-k7-02',
     },
     {
@@ -19,7 +19,7 @@ const activities = [
         title: 'Jalan Tanpa Henti',
         description: 'Buat kucing berjalan membentuk persegi menggunakan blok Ulangi (Loop).',
         emoji: '🔄',
-        color: '#10b981',
+        color: '#10b981', // emerald-500
         embedPath: '/embed/ap-k7-03',
     },
     {
@@ -28,7 +28,7 @@ const activities = [
         title: 'Bermain dengan Suara & Lebih Natural',
         description: 'Buat gerakan lebih natural dengan blok Tunggu dan pola kompleks.',
         emoji: '🎵',
-        color: '#8b5cf6',
+        color: '#8b5cf6', // violet-500
         embedPath: '/embed/ap-k7-04',
     },
     {
@@ -37,7 +37,7 @@ const activities = [
         title: 'Bermain Robot Manual',
         description: 'Navigasikan 4 robot melewati jalur di atas grid 10×10 menuju titik Finish.',
         emoji: '🤖',
-        color: '#f97316',
+        color: '#f97316', // orange-500
         embedPath: '/embed/ap-k7-08',
     },
 ]
@@ -56,16 +56,16 @@ export default function Chapter7ListPage() {
     }, [])
 
     return (
-        <div className="space-y-6 animate-fade-in">
+        <div className="space-y-6 animate-fade-in pb-8">
             {/* Header */}
             <div>
-                <Link to="/" className="text-white/60 hover:text-white transition-colors mb-2 inline-block text-sm">
+                <Link to="/" className="text-slate-500 hover:text-slate-800 transition-colors mb-2 inline-block text-sm font-semibold">
                     ← Kembali ke Dashboard
                 </Link>
-                <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+                <h1 className="text-3xl font-black text-slate-800 flex items-center gap-3">
                     <span>🧩</span> Bab 7: Algoritma Pemrograman Visual
                 </h1>
-                <p className="text-white/60 mt-1">
+                <p className="text-slate-500 mt-2 font-medium">
                     Pilih aktivitas untuk belajar membuat program visual seperti Scratch!
                 </p>
             </div>
@@ -73,10 +73,10 @@ export default function Chapter7ListPage() {
             {/* XP badge (gamified users) */}
             {isGamified && userSession && (
                 <div className="flex gap-3">
-                    <span className="text-sm px-3 py-1.5 bg-yellow-500/15 text-yellow-400 rounded-full font-semibold border border-yellow-500/20">
+                    <span className="text-sm px-4 py-1.5 bg-yellow-50 text-yellow-600 rounded-full font-bold border border-yellow-200 shadow-sm">
                         ⭐ {userSession.xp} XP
                     </span>
-                    <span className="text-sm px-3 py-1.5 bg-slate-700/60 text-slate-300 rounded-full font-semibold border border-slate-600/40">
+                    <span className="text-sm px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-full font-bold border border-indigo-200 shadow-sm">
                         🏅 Level {userSession.level}
                     </span>
                 </div>
@@ -88,43 +88,43 @@ export default function Chapter7ListPage() {
                     <button
                         key={activity.id}
                         onClick={() => navigate(activity.embedPath)}
-                        className="flex items-center gap-4 bg-slate-800/50 hover:bg-slate-700/60 border border-slate-700/50 hover:border-slate-600/60
-                                   rounded-2xl p-5 text-left transition-all duration-200 active:scale-[0.98] group"
+                        className="flex items-center gap-5 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300
+                                   rounded-2xl p-5 text-left transition-all duration-200 active:scale-[0.98] group shadow-sm hover:shadow"
                     >
                         {/* Icon */}
                         <div
-                            className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 text-2xl"
-                            style={{ backgroundColor: activity.color + '25' }}
+                            className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0 text-3xl shadow-sm border border-black/5"
+                            style={{ backgroundColor: activity.color + '15' }} // slightly tinted background
                         >
                             {activity.emoji}
                         </div>
 
                         {/* Content */}
                         <div className="flex-1 min-w-0">
-                            <p className="text-xs font-bold uppercase tracking-wide mb-0.5" style={{ color: activity.color }}>
+                            <p className="text-xs font-black uppercase tracking-wider mb-1" style={{ color: activity.color }}>
                                 {activity.code}
                             </p>
-                            <p className="text-white font-semibold text-base leading-tight mb-1">
+                            <p className="text-slate-800 font-bold text-lg leading-tight mb-1.5 group-hover:text-indigo-600 transition-colors">
                                 {activity.title}
                             </p>
-                            <p className="text-white/50 text-sm leading-snug">
+                            <p className="text-slate-500 text-sm leading-relaxed">
                                 {activity.description}
                             </p>
                         </div>
 
                         {/* Done badge / Arrow */}
                         {completed.has(activity.code)
-                            ? <span className="flex-shrink-0 w-7 h-7 rounded-full bg-green-500/20 border border-green-500/40 flex items-center justify-center text-green-400 text-sm font-bold">✓</span>
-                            : <span className="text-white/25 text-2xl group-hover:text-white/50 transition-colors flex-shrink-0">›</span>
+                            ? <span className="flex-shrink-0 w-8 h-8 rounded-full bg-green-100 border border-green-200 flex items-center justify-center text-green-600 text-sm font-black shadow-sm" title="Selesai">✓</span>
+                            : <span className="text-slate-300 text-3xl group-hover:text-slate-400 transition-colors flex-shrink-0">›</span>
                         }
                     </button>
                 ))}
             </div>
 
             {/* Info box */}
-            <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-2xl p-5">
-                <p className="text-white/60 text-sm leading-relaxed">
-                    💡 Aktivitas ini menggunakan <strong className="text-white/80">Blockly</strong> — drag-and-drop blok untuk membuat program,
+            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6 shadow-sm">
+                <p className="text-blue-800 text-sm font-medium leading-relaxed">
+                    💡 <strong className="font-bold text-blue-900">Info:</strong> Aktivitas ini menggunakan <strong className="font-bold border-b-2 border-blue-300">Blockly</strong> — drag-and-drop blok untuk membuat program,
                     lalu jalankan dan lihat karakter bergerak!
                 </p>
             </div>

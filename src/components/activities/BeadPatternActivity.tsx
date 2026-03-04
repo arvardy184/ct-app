@@ -22,12 +22,12 @@ interface BeadProps {
 }
 
 const beadColorMap: Record<BeadColor, string> = {
-    red: 'from-red-500 to-red-600',
-    blue: 'from-blue-500 to-blue-600',
-    green: 'from-green-500 to-green-600',
-    yellow: 'from-yellow-400 to-yellow-500',
-    purple: 'from-purple-500 to-purple-600',
-    orange: 'from-orange-500 to-orange-600',
+    red: 'bg-red-500',
+    blue: 'bg-blue-500',
+    green: 'bg-green-500',
+    yellow: 'bg-yellow-400',
+    purple: 'bg-purple-500',
+    orange: 'bg-orange-500',
 }
 
 const beadSizeMap = {
@@ -40,20 +40,12 @@ function Bead({ color, isDragging, size = 'md' }: BeadProps) {
     return (
         <div
             className={`
-        ${beadSizeMap[size]} rounded-full bg-gradient-to-br ${beadColorMap[color]}
-        shadow-lg border-4 border-white/30
-        ${isDragging ? 'scale-110 shadow-2xl ring-4 ring-white/50' : ''}
-        transition-all duration-200
-      `}
-            style={{
-                boxShadow: isDragging
-                    ? '0 20px 40px rgba(0,0,0,0.3)'
-                    : 'inset 0 -4px 8px rgba(0,0,0,0.2), 0 4px 8px rgba(0,0,0,0.2)',
-            }}
-        >
-            {/* Glass effect */}
-            <div className="w-1/3 h-1/3 bg-white/40 rounded-full ml-2 mt-1" />
-        </div>
+                ${beadSizeMap[size]} rounded-full ${beadColorMap[color]}
+                border-[3px] border-white/90
+                ${isDragging ? 'scale-110 ring-4 ring-slate-200 shadow-lg' : 'shadow-sm'}
+                transition-transform duration-200
+            `}
+        />
     )
 }
 
@@ -94,17 +86,17 @@ function DroppableSlot({
         <div
             ref={setNodeRef}
             className={`
-        w-16 h-16 rounded-full border-4 border-dashed
-        flex items-center justify-center
-        transition-all duration-300
-        ${isOver ? 'border-green-400 bg-green-400/20 scale-110' : 'border-white/30 bg-white/5'}
-        ${hasCorrectAnswer ? 'border-green-500 bg-green-500/20' : ''}
-      `}
+                w-16 h-16 rounded-full border-4 border-dashed
+                flex items-center justify-center
+                transition-all duration-300
+                ${isOver ? 'border-green-400 bg-green-50 scale-110' : 'border-slate-300 bg-slate-100'}
+                ${hasCorrectAnswer ? 'border-green-500 bg-green-50' : ''}
+            `}
         >
             {placedColor ? (
                 <Bead id="placed" color={placedColor} size="lg" />
             ) : (
-                <span className="text-white/30 text-2xl">?</span>
+                <span className="text-slate-400 font-bold text-2xl">?</span>
             )}
         </div>
     )
@@ -217,14 +209,14 @@ export default function BeadPatternActivity({ onComplete }: BeadPatternActivityP
 
     if (isComplete) {
         return (
-            <div className="flex flex-col items-center justify-center py-16 animate-fade-in">
+            <div className="flex flex-col items-center justify-center py-16 animate-fade-in bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
                 <div className="text-8xl mb-6">🎉</div>
-                <h2 className="text-3xl font-bold text-white mb-4">Selamat!</h2>
-                <p className="text-xl text-white/70 mb-6">
+                <h2 className="text-3xl font-black text-slate-800 mb-4">Selamat!</h2>
+                <p className="text-xl text-slate-600 mb-6 font-medium">
                     Kamu telah menyelesaikan semua level!
                 </p>
-                <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-8 py-4 rounded-2xl">
-                    <p className="text-white text-2xl font-bold">Total Score: {score} XP</p>
+                <div className="bg-green-50 border border-green-200 px-8 py-4 rounded-2xl">
+                    <p className="text-green-700 text-2xl font-bold">Total Score: {score} XP</p>
                 </div>
                 <button
                     onClick={() => {
@@ -235,8 +227,8 @@ export default function BeadPatternActivity({ onComplete }: BeadPatternActivityP
                         setIsCorrect(null)
                         setAttempts(0)
                     }}
-                    className="mt-8 px-6 py-3 bg-white text-purple-600 font-bold rounded-xl 
-                     hover:scale-105 transition-transform"
+                    className="mt-8 px-8 py-4 bg-slate-800 text-white font-bold rounded-xl 
+                     hover:bg-slate-700 active:scale-95 transition-all shadow-sm"
                 >
                     Main Lagi
                 </button>
@@ -250,17 +242,17 @@ export default function BeadPatternActivity({ onComplete }: BeadPatternActivityP
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
         >
-            <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-6 w-full max-w-2xl mx-auto">
                 {/* Level Info */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h3 className="text-2xl font-bold text-white mb-1">
+                        <h3 className="text-2xl font-black text-slate-800 mb-1">
                             Level {currentLevel + 1} / {patternLevels.length}
                         </h3>
-                        <p className="text-white/60">
+                        <p className="text-slate-500 font-medium">
                             Kesulitan: {' '}
-                            <span className={`font-medium ${level.difficulty === 'easy' ? 'text-green-400' :
-                                    level.difficulty === 'medium' ? 'text-yellow-400' : 'text-red-400'
+                            <span className={`font-bold ${level.difficulty === 'easy' ? 'text-green-600' :
+                                level.difficulty === 'medium' ? 'text-orange-500' : 'text-red-500'
                                 }`}>
                                 {level.difficulty === 'easy' ? 'Mudah' :
                                     level.difficulty === 'medium' ? 'Sedang' : 'Sulit'}
@@ -269,24 +261,24 @@ export default function BeadPatternActivity({ onComplete }: BeadPatternActivityP
                     </div>
 
                     {isGamified && (
-                        <div className="bg-yellow-500/20 px-4 py-2 rounded-lg">
-                            <p className="text-yellow-400 font-bold">+{level.xpReward} XP</p>
+                        <div className="bg-yellow-50 border border-yellow-200 px-4 py-2 rounded-xl shadow-sm">
+                            <p className="text-yellow-700 font-bold">+{level.xpReward} XP</p>
                         </div>
                     )}
                 </div>
 
                 {/* Instructions */}
-                <div className="bg-slate-800/50 rounded-xl p-4">
-                    <p className="text-white text-lg">
-                        🎨 <strong>Lengkapi Pola!</strong> Perhatikan urutan warna dan tempatkan
+                <div className="bg-white border border-slate-200 shadow-sm rounded-xl p-5">
+                    <p className="text-slate-700 text-base font-medium leading-relaxed">
+                        🎨 <strong className="text-slate-900">Lengkapi Pola!</strong> Perhatikan urutan warna dan tempatkan
                         manik yang tepat pada posisi yang kosong.
                     </p>
                 </div>
 
                 {/* Pattern Display */}
-                <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-8 shadow-xl">
-                    <h4 className="text-white font-bold mb-6 text-center">Pola Gelang:</h4>
-                    <div className="flex items-center justify-center gap-3 flex-wrap">
+                <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
+                    <h4 className="text-slate-800 font-bold mb-8 text-center text-lg">Pola Gelang:</h4>
+                    <div className="flex items-center justify-center gap-4 flex-wrap">
                         {level.pattern.map((color, index) => (
                             index === level.missingIndex ? (
                                 <DroppableSlot
@@ -304,31 +296,33 @@ export default function BeadPatternActivity({ onComplete }: BeadPatternActivityP
 
                     {/* Feedback */}
                     {isCorrect === true && (
-                        <div className="mt-6 text-center animate-fade-in">
-                            <p className="text-green-400 text-xl font-bold">✅ Benar! Lanjut ke level berikutnya...</p>
+                        <div className="mt-8 mb-[-1rem] text-center animate-fade-in bg-green-50 border border-green-200 py-3 rounded-xl">
+                            <p className="text-green-700 text-base font-bold">✅ Benar! Lanjut ke level berikutnya...</p>
                         </div>
                     )}
                     {isCorrect === false && (
-                        <div className="mt-6 text-center animate-fade-in">
-                            <p className="text-red-400 text-xl font-bold">❌ Coba lagi!</p>
+                        <div className="mt-8 mb-[-1rem] text-center animate-fade-in bg-red-50 border border-red-200 py-3 rounded-xl">
+                            <p className="text-red-600 text-base font-bold">❌ Coba lagi!</p>
                         </div>
                     )}
                 </div>
 
                 {/* Hint */}
                 {showHint && !isCorrect && (
-                    <div className="bg-blue-500/20 border border-blue-500/30 rounded-xl p-4 animate-fade-in">
-                        <p className="text-blue-300">
-                            💡 <strong>Petunjuk:</strong> Perhatikan pola yang berulang.
-                            Warna apa yang muncul setelah {level.pattern[level.missingIndex - 1]}?
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 animate-fade-in shadow-sm">
+                        <p className="text-blue-800 font-medium leading-relaxed">
+                            💡 <strong className="font-bold">Petunjuk:</strong> Perhatikan pola yang berulang.
+                            Warna apa yang muncul setelah <span className="font-bold uppercase tracking-wider">{level.pattern[level.missingIndex - 1]}</span>?
                         </p>
                     </div>
                 )}
 
                 {/* Available Beads */}
-                <div className="bg-slate-800/50 rounded-2xl p-6">
-                    <h4 className="text-white font-bold mb-4">Pilih Manik:</h4>
-                    <div className="flex items-center justify-center gap-4 flex-wrap">
+                <div className="bg-slate-50 border border-slate-200 shadow-inner rounded-3xl p-6 mt-2 relative">
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border border-slate-200 px-4 py-1 rounded-full shadow-sm">
+                        <h4 className="text-slate-600 font-bold text-sm">Pilih Manik:</h4>
+                    </div>
+                    <div className="flex items-center justify-center gap-5 flex-wrap mt-4">
                         {availableColors.map((color) => (
                             <DraggableBead key={color} id={`available-${color}`} color={color} />
                         ))}
@@ -336,15 +330,15 @@ export default function BeadPatternActivity({ onComplete }: BeadPatternActivityP
                 </div>
 
                 {/* Progress */}
-                <div className="flex items-center gap-4">
-                    <span className="text-white/60">Progress:</span>
-                    <div className="flex-1 h-3 bg-slate-700 rounded-full overflow-hidden">
+                <div className="flex items-center gap-4 mt-4 px-2">
+                    <span className="text-slate-500 font-bold text-sm">Progres:</span>
+                    <div className="flex-1 h-3 bg-slate-200 rounded-full overflow-hidden shadow-inner">
                         <div
-                            className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
+                            className="h-full bg-indigo-500 transition-all duration-500"
                             style={{ width: `${((currentLevel) / patternLevels.length) * 100}%` }}
                         />
                     </div>
-                    <span className="text-white font-medium">
+                    <span className="text-slate-700 font-bold text-sm">
                         {currentLevel}/{patternLevels.length}
                     </span>
                 </div>

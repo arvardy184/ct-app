@@ -289,21 +289,21 @@ const VisualStage = forwardRef<VisualStageRef, VisualStageProps>(({
         <div className="flex flex-col gap-4">
             {/* Stage Header */}
             <div className="flex items-center justify-between">
-                <h3 className="text-white font-bold flex items-center gap-2">
+                <h3 className="text-slate-800 font-bold flex items-center gap-2 text-lg">
                     <span>🎬</span> Visual Stage
                 </h3>
                 <button
                     onClick={reset}
                     disabled={isExecuting}
-                    className="flex items-center gap-2 px-4 py-2 bg-slate-700 text-white text-sm 
-                     rounded-lg hover:bg-slate-600 disabled:opacity-50 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-white text-slate-700 text-sm font-semibold 
+                     rounded-xl shadow-sm border border-slate-200 hover:bg-slate-50 disabled:opacity-50 transition-colors"
                 >
                     🔄 Reset Posisi
                 </button>
             </div>
 
             {/* Canvas Stage */}
-            <div className="bg-white rounded-2xl overflow-hidden shadow-xl border-4 border-purple-200">
+            <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 relative">
                 <Stage width={width} height={height}>
                     <Layer>
                         {/* Background */}
@@ -322,25 +322,26 @@ const VisualStage = forwardRef<VisualStageRef, VisualStageProps>(({
                             text={`X: ${Math.round(sprite.x)} Y: ${Math.round(sprite.y)} ∠${Math.round(sprite.rotation)}°`}
                             fontSize={12}
                             fontFamily="monospace"
-                            fill="#6b7280"
+                            fill="#64748b"
+                            fontStyle="bold"
                         />
                     </Layer>
                 </Stage>
             </div>
 
             {/* Console Output */}
-            <div className="bg-slate-900 rounded-xl p-4 shadow-lg">
-                <h3 className="text-white font-bold mb-2 flex items-center gap-2">
+            <div className="bg-white border border-slate-200 shadow-sm rounded-xl p-4">
+                <h3 className="text-slate-800 font-bold mb-3 flex items-center gap-2">
                     <span>💻</span> Output Konsol
                 </h3>
-                <div className="bg-slate-800 rounded-lg p-3 h-32 overflow-y-auto font-mono text-sm">
+                <div className="bg-slate-50 rounded-xl p-4 h-32 overflow-y-auto font-mono text-sm border border-slate-200 shadow-inner">
                     {consoleOutput.length === 0 ? (
                         <p className="text-slate-500 italic">
                             Klik "Jalankan" untuk melihat hasil eksekusi...
                         </p>
                     ) : (
                         consoleOutput.map((line, i) => (
-                            <p key={i} className="text-green-400 mb-1">{line}</p>
+                            <p key={i} className="text-indigo-600 font-bold mb-1.5">{line}</p>
                         ))
                     )}
                 </div>

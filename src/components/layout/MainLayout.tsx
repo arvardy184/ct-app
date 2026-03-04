@@ -13,26 +13,26 @@ export default function MainLayout() {
     ]
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/50 to-slate-900">
+        <div className="min-h-screen bg-slate-50">
             {/* Conditional Gamification Header */}
             {isGamified && userSession && <GamificationHeader />}
 
             {/* Non-Gamified Simple Header */}
             {!isGamified && (
-                <header className="bg-slate-800/80 backdrop-blur-sm border-b border-slate-700/50 px-6 py-4">
+                <header className="bg-white border-b border-slate-200 px-6 py-4">
                     <div className="container mx-auto flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 bg-slate-700 rounded-lg flex items-center justify-center">
+                            <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
                                 📚
                             </div>
-                            <h1 className="text-xl font-semibold text-white">
+                            <h1 className="text-xl font-semibold text-slate-800">
                                 Pembelajaran Algoritma & Berpikir Komputasional
                             </h1>
                         </div>
                         {userSession && (
                             <div className="flex items-center gap-3">
-                                <span className="text-slate-400">Halo,</span>
-                                <span className="text-white font-medium">{userSession.name}</span>
+                                <span className="text-slate-500">Halo,</span>
+                                <span className="text-slate-800 font-medium">{userSession.name}</span>
                             </div>
                         )}
                     </div>
@@ -40,7 +40,7 @@ export default function MainLayout() {
             )}
 
             {/* Navigation */}
-            <nav className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700/30">
+            <nav className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-10">
                 <div className="container mx-auto px-6">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1">
@@ -48,9 +48,9 @@ export default function MainLayout() {
                                 <Link
                                     key={link.path}
                                     to={link.path}
-                                    className={`flex items-center gap-2 px-5 py-3 text-sm font-medium transition-all duration-200 border-b-2 ${location.pathname === link.path
-                                            ? 'text-white border-purple-500 bg-purple-500/10'
-                                            : 'text-slate-400 border-transparent hover:text-white hover:bg-white/5'
+                                    className={`flex items-center gap-2 px-5 py-4 text-sm font-medium transition-all duration-200 border-b-2 ${location.pathname === link.path
+                                        ? 'text-indigo-600 border-indigo-600 bg-indigo-50/50'
+                                        : 'text-slate-500 border-transparent hover:text-slate-800 hover:bg-slate-50'
                                         }`}
                                 >
                                     <span>{link.icon}</span>
@@ -63,8 +63,8 @@ export default function MainLayout() {
                         <button
                             onClick={toggleGamificationMode}
                             className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${isGamified
-                                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/30'
-                                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
+                                : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400'
                                 }`}
                         >
                             {isGamified ? '🎮 Gamified Mode' : '📝 Standard Mode'}
@@ -79,7 +79,7 @@ export default function MainLayout() {
             </main>
 
             {/* Footer */}
-            <footer className="bg-slate-900/80 border-t border-slate-800 py-6 mt-auto">
+            <footer className="bg-white border-t border-slate-200 py-6 mt-auto">
                 <div className="container mx-auto px-6 text-center">
                     <p className="text-slate-500 text-sm">
                         © 2026 Computational Thinking App - Thesis Research Project

@@ -22,7 +22,7 @@ function TimerDisplay({ getElapsedTime }: { getElapsedTime: () => number }) {
     }
 
     return (
-        <p className="text-white font-mono text-xl">{formatTime(time)}</p>
+        <p className="text-slate-800 font-mono text-xl font-bold">{formatTime(time)}</p>
     )
 }
 
@@ -38,61 +38,64 @@ export default function Chapter2Page() {
     }
 
     return (
-        <div className="space-y-8 animate-fade-in">
+        <div className="space-y-8 animate-fade-in max-w-5xl mx-auto">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <Link to="/" className="text-white/60 hover:text-white transition-colors mb-2 inline-block">
+                    <Link to="/" className="text-indigo-600 hover:text-indigo-800 font-medium transition-colors mb-2 inline-block">
                         ← Kembali ke Dashboard
                     </Link>
-                    <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+                    <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
                         <span>🎨</span> Bab 2: Pengenalan Pola
                     </h1>
-                    <p className="text-white/60 mt-2">
+                    <p className="text-slate-500 mt-2 font-medium">
                         Belajar mengenali dan melanjutkan pola dengan aktivitas gelang manik-manik
                     </p>
                 </div>
 
                 {/* Timer */}
-                <div className="bg-slate-800/50 px-4 py-2 rounded-lg">
-                    <p className="text-white/60 text-sm">Waktu Belajar</p>
+                <div className="bg-white border border-slate-200 shadow-sm px-5 py-3 rounded-xl text-center">
+                    <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">Waktu Belajar</p>
                     <TimerDisplay getElapsedTime={getElapsedTime} />
                 </div>
             </div>
 
             {/* Learning Objectives */}
-            <div className="bg-gradient-to-r from-pink-600/20 to-rose-600/20 border border-pink-500/30 rounded-2xl p-6">
-                <h2 className="text-xl font-bold text-white mb-4">📌 Tujuan Pembelajaran</h2>
-                <ul className="space-y-2 text-white/80">
-                    <li className="flex items-start gap-2">
-                        <span className="text-green-400 mt-1">✓</span>
+            <div className="bg-pink-50 border border-pink-200 rounded-2xl p-6 shadow-sm">
+                <h2 className="text-xl font-bold text-pink-800 mb-4 flex items-center gap-2">
+                    <span>📌</span> Tujuan Pembelajaran
+                </h2>
+                <ul className="space-y-3 text-pink-700 font-medium">
+                    <li className="flex items-start gap-3">
+                        <span className="text-pink-500 mt-0.5">✓</span>
                         Memahami konsep pola dan urutan
                     </li>
-                    <li className="flex items-start gap-2">
-                        <span className="text-green-400 mt-1">✓</span>
+                    <li className="flex items-start gap-3">
+                        <span className="text-pink-500 mt-0.5">✓</span>
                         Mengidentifikasi pola yang berulang
                     </li>
-                    <li className="flex items-start gap-2">
-                        <span className="text-green-400 mt-1">✓</span>
+                    <li className="flex items-start gap-3">
+                        <span className="text-pink-500 mt-0.5">✓</span>
                         Memprediksi elemen berikutnya dalam sebuah pola
                     </li>
-                    <li className="flex items-start gap-2">
-                        <span className="text-green-400 mt-1">✓</span>
+                    <li className="flex items-start gap-3">
+                        <span className="text-pink-500 mt-0.5">✓</span>
                         Mengembangkan keterampilan berpikir komputasional
                     </li>
                 </ul>
             </div>
 
             {/* Activity */}
-            <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm 
-                      border border-slate-700/50 rounded-2xl p-8">
+            <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
                 <BeadPatternActivity onComplete={handleComplete} />
             </div>
 
             {/* Tips */}
-            <div className="bg-blue-500/10 border border-blue-500/30 rounded-2xl p-6">
-                <h2 className="text-xl font-bold text-white mb-4">💡 Tips</h2>
-                <ul className="space-y-2 text-white/70">
+            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6 shadow-sm">
+                <h2 className="text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">
+                    <span>💡</span> Tips
+                </h2>
+                <ul className="space-y-2 text-blue-700 font-medium">
                     <li>• Perhatikan urutan warna yang muncul sebelum slot kosong</li>
                     <li>• Cari pola yang berulang (misalnya: AB AB AB...)</li>
                     <li>• Jangan terburu-buru, pikirkan dengan tenang</li>

@@ -6,10 +6,10 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-900 flex items-center justify-center">
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
                 <div className="text-center">
                     <div className="text-5xl mb-4 animate-pulse">🧩</div>
-                    <p className="text-white/60">Memuat...</p>
+                    <p className="text-slate-600 font-medium">Memuat...</p>
                 </div>
             </div>
         )
