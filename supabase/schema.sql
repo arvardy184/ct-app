@@ -119,6 +119,32 @@ CREATE POLICY "Users can update own sessions" ON experiment_sessions
   FOR UPDATE USING (auth.uid() = user_id);
 
 -- ============================================
+-- 5. ADMIN READ-ALL POLICIES
+-- Allows admin@gmail.com to read all rows
+-- Run this in Supabase SQL Editor
+-- ============================================
+
+CREATE POLICY "Admin can read all profiles" ON profiles
+  FOR SELECT USING (
+    auth.jwt() ->> 'email' = 'admin@gmail.com'
+  );
+
+CREATE POLICY "Admin can read all activity logs" ON activity_logs
+  FOR SELECT USING (
+    auth.jwt() ->> 'email' = 'admin@gmail.com'
+  );
+
+CREATE POLICY "Admin can read all gamification stats" ON gamification_stats
+  FOR SELECT USING (
+    auth.jwt() ->> 'email' = 'admin@gmail.com'
+  );
+
+CREATE POLICY "Admin can read all experiment sessions" ON experiment_sessions
+  FOR SELECT USING (
+    auth.jwt() ->> 'email' = 'admin@gmail.com'
+  );
+
+-- ============================================
 -- VIEWS FOR RESEARCH ANALYSIS
 -- ============================================
 

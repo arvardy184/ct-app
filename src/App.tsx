@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import MainLayout from './components/layout/MainLayout'
 import AuthGuard from './components/layout/AuthGuard'
+import AdminGuard from './components/layout/AdminGuard'
 import DashboardPage from './features/dashboard/DashboardPage'
 import Chapter2Page from './features/learning-modules/Chapter2Page'
 import Chapter7Page from './features/learning-modules/Chapter7Page'
@@ -9,6 +10,10 @@ import LoginPage from './features/auth/LoginPage'
 import RegisterPage from './features/auth/RegisterPage'
 import APActivityPage from './features/learning-modules/APActivityPage'
 import RobotManualPage from './features/learning-modules/RobotManualPage'
+import AdminLayout from './features/admin/AdminLayout'
+import AdminDashboardPage from './features/admin/AdminDashboardPage'
+import AdminUsersPage from './features/admin/AdminUsersPage'
+import AdminLogsPage from './features/admin/AdminLogsPage'
 
 function App() {
     return (
@@ -26,6 +31,17 @@ function App() {
                 <Route index element={<DashboardPage />} />
                 <Route path="chapter2" element={<Chapter2Page />} />
                 <Route path="chapter7" element={<Chapter7ListPage />} />
+            </Route>
+
+            {/* ── Admin Routes ── */}
+            <Route path="/admin" element={
+                <AdminGuard>
+                    <AdminLayout />
+                </AdminGuard>
+            }>
+                <Route index element={<AdminDashboardPage />} />
+                <Route path="users" element={<AdminUsersPage />} />
+                <Route path="logs" element={<AdminLogsPage />} />
             </Route>
 
             {/* ── Embedded Routes (React Native WebView — no auth guard, token injected) ── */}
