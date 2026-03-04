@@ -127,6 +127,76 @@ Blockly.Blocks['kontrol_selamanya'] = {
     }
 }
 
+// 9. UBAH X (Change X by N)
+Blockly.Blocks['ubah_x'] = {
+    init: function (this: Blockly.Block) {
+        this.appendDummyInput()
+            .appendField('↔️ Ubah X sebesar')
+            .appendField(new Blockly.FieldNumber(10, -500, 500), 'VALUE')
+        this.setPreviousStatement(true, null)
+        this.setNextStatement(true, null)
+        this.setColour('#4C97FF')
+        this.setTooltip('Geser sprite ke kanan (positif) atau kiri (negatif)')
+        this.setHelpUrl('')
+    }
+}
+
+// 10. UBAH Y (Change Y by N)
+Blockly.Blocks['ubah_y'] = {
+    init: function (this: Blockly.Block) {
+        this.appendDummyInput()
+            .appendField('↕️ Ubah Y sebesar')
+            .appendField(new Blockly.FieldNumber(10, -500, 500), 'VALUE')
+        this.setPreviousStatement(true, null)
+        this.setNextStatement(true, null)
+        this.setColour('#4C97FF')
+        this.setTooltip('Geser sprite ke atas (positif) atau bawah (negatif)')
+        this.setHelpUrl('')
+    }
+}
+
+// 11. PERGI KE X Y (Go to X: Y:)
+Blockly.Blocks['pergi_ke'] = {
+    init: function (this: Blockly.Block) {
+        this.appendDummyInput()
+            .appendField('📍 Pergi ke x:')
+            .appendField(new Blockly.FieldNumber(0, -240, 240), 'X')
+            .appendField('y:')
+            .appendField(new Blockly.FieldNumber(0, -180, 180), 'Y')
+        this.setPreviousStatement(true, null)
+        this.setNextStatement(true, null)
+        this.setColour('#4C97FF')
+        this.setTooltip('Pindahkan sprite ke posisi absolut. (0,0) = tengah panggung. X positif = kanan, Y positif = atas.')
+        this.setHelpUrl('')
+    }
+}
+
+// 12. GANTI KOSTUM (Next Costume)
+Blockly.Blocks['ganti_kostum'] = {
+    init: function (this: Blockly.Block) {
+        this.appendDummyInput()
+            .appendField('🎭 Ganti Kostum')
+        this.setPreviousStatement(true, null)
+        this.setNextStatement(true, null)
+        this.setColour('#CF63CF')
+        this.setTooltip('Ganti tampilan sprite ke kostum berikutnya')
+        this.setHelpUrl('')
+    }
+}
+
+// 13. MAINKAN SUARA (Play Sound)
+Blockly.Blocks['mainkan_suara'] = {
+    init: function (this: Blockly.Block) {
+        this.appendDummyInput()
+            .appendField('🔊 Mainkan Suara Kucing')
+        this.setPreviousStatement(true, null)
+        this.setNextStatement(true, null)
+        this.setColour('#CF63CF')
+        this.setTooltip('Mainkan suara kucing "Meow"')
+        this.setHelpUrl('')
+    }
+}
+
 // ============================================
 // CODE GENERATORS
 // ============================================
@@ -173,6 +243,26 @@ javascriptGenerator.forBlock['kontrol_selamanya'] = function (block: Blockly.Blo
     return `for (let _forever = 0; _forever < 100; _forever++) {\n${statements}}\n`
 }
 
+javascriptGenerator.forBlock['ubah_x'] = function (block: Blockly.Block) {
+    return `changeX(${block.getFieldValue('VALUE')});\n`
+}
+
+javascriptGenerator.forBlock['ubah_y'] = function (block: Blockly.Block) {
+    return `changeY(${block.getFieldValue('VALUE')});\n`
+}
+
+javascriptGenerator.forBlock['pergi_ke'] = function (block: Blockly.Block) {
+    return `goTo(${block.getFieldValue('X')}, ${block.getFieldValue('Y')});\n`
+}
+
+javascriptGenerator.forBlock['ganti_kostum'] = function () {
+    return `nextCostume();\n`
+}
+
+javascriptGenerator.forBlock['mainkan_suara'] = function () {
+    return `playSound();\n`
+}
+
 // ============================================
 // TOOLBOX CONFIGURATION
 // ============================================
@@ -195,7 +285,10 @@ export const toolboxConfig = {
             contents: [
                 { kind: 'block', type: 'gerak_maju' },
                 { kind: 'block', type: 'putar_kanan' },
-                { kind: 'block', type: 'putar_kiri' }
+                { kind: 'block', type: 'putar_kiri' },
+                { kind: 'block', type: 'ubah_x' },
+                { kind: 'block', type: 'ubah_y' },
+                { kind: 'block', type: 'pergi_ke' },
             ]
         },
         {
@@ -206,6 +299,15 @@ export const toolboxConfig = {
                 { kind: 'block', type: 'kontrol_ulangi' },
                 { kind: 'block', type: 'tunggu' },
                 { kind: 'block', type: 'kontrol_selamanya' }
+            ]
+        },
+        {
+            kind: 'category',
+            name: '🟣 Tampilan & Suara',
+            colour: '#CF63CF',
+            contents: [
+                { kind: 'block', type: 'ganti_kostum' },
+                { kind: 'block', type: 'mainkan_suara' },
             ]
         }
     ]

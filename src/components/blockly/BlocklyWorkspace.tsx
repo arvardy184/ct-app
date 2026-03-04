@@ -146,6 +146,14 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceRef, BlocklyWorkspaceProps>(
             if (turnLeftMatch) commands.push({ type: 'turnLeft', value: parseInt(turnLeftMatch[1]) })
             const waitMatch = line.match(/wait\(([\d.]+)\)/)
             if (waitMatch) commands.push({ type: 'wait', value: parseFloat(waitMatch[1]) })
+            const changeXMatch = line.match(/changeX\((-?\d+)\)/)
+            if (changeXMatch) commands.push({ type: 'changeX', value: parseInt(changeXMatch[1]) })
+            const changeYMatch = line.match(/changeY\((-?\d+)\)/)
+            if (changeYMatch) commands.push({ type: 'changeY', value: parseInt(changeYMatch[1]) })
+            const goToMatch = line.match(/goTo\((-?\d+),\s*(-?\d+)\)/)
+            if (goToMatch) commands.push({ type: 'goTo', x: parseInt(goToMatch[1]), y: parseInt(goToMatch[2]) })
+            if (line.includes('nextCostume()')) commands.push({ type: 'nextCostume' })
+            if (line.includes('playSound()')) commands.push({ type: 'playSound' })
         }
         return commands
     }

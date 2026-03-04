@@ -5,7 +5,7 @@ export default function GamificationHeader() {
 
     if (!userSession) return null
 
-    const xpProgress = userSession.xp % 100 // Progress to next level (0-100)
+    const xpProgress = userSession.xp % 100 
     const xpToNextLevel = 100 - xpProgress
 
     return (

@@ -6,7 +6,7 @@ export interface UserSession {
     xp: number
     level: number
     badges: string[]
-    groupType: 'A' | 'B' // For crossover experiment
+    groupType: 'A' | 'B' 
 }
 
 // Activity Log for Research Tracking
@@ -56,11 +56,17 @@ export interface SpriteState {
     isAnimating: boolean
 }
 
-// Execution Command
-export interface ExecutionCommand {
-    type: 'move' | 'turnRight' | 'turnLeft' | 'wait'
-    value: number
-}
+// Execution Command (discriminated union)
+export type ExecutionCommand =
+    | { type: 'move';        value: number }
+    | { type: 'turnRight';   value: number }
+    | { type: 'turnLeft';    value: number }
+    | { type: 'wait';        value: number }
+    | { type: 'changeX';     value: number }
+    | { type: 'changeY';     value: number }
+    | { type: 'goTo';        x: number; y: number }
+    | { type: 'nextCostume' }
+    | { type: 'playSound'   }
 
 // Blockly Workspace State
 export interface WorkspaceState {

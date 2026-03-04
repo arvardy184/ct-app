@@ -3,8 +3,29 @@ import { Stage, Layer, Rect, Group, Text, Line, Circle } from 'react-konva'
 import type { ExecutionCommand } from '../../types'
 import { useAppStore } from '../../stores/useAppStore'
 
+// Play cat meow sound via Web Audio API (no file needed)
+function playCatSound() {
+    try {
+        const ctx = new AudioContext()
+        const osc = ctx.createOscillator()
+        const gain = ctx.createGain()
+        osc.connect(gain)
+        gain.connect(ctx.destination)
+        osc.frequency.setValueAtTime(900, ctx.currentTime)
+        osc.frequency.exponentialRampToValueAtTime(550, ctx.currentTime + 0.12)
+        osc.frequency.exponentialRampToValueAtTime(750, ctx.currentTime + 0.35)
+        gain.gain.setValueAtTime(0, ctx.currentTime)
+        gain.gain.linearRampToValueAtTime(0.25, ctx.currentTime + 0.05)
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4)
+        osc.start(ctx.currentTime)
+        osc.stop(ctx.currentTime + 0.4)
+    } catch { /* audio not available */ }
+}
+
 // Cat sprite as a simple shape group
-const CatSprite = ({ x, y, rotation }: { x: number; y: number; rotation: number }) => {
+// costume 0 = normal, costume 1 = singing (open mouth + squinting eyes)
+const CatSprite = ({ x, y, rotation, costume = 0 }: { x: number; y: number; rotation: number; costume?: number }) => {
+    const mouthOpen = costume === 1
     return (
         <Group x={x} y={y} rotation={rotation} offsetX={20} offsetY={20}>
             {/* Body */}
@@ -37,13 +58,26 @@ const CatSprite = ({ x, y, rotation }: { x: number; y: number; rotation: number 
                 fill="#FF9500"
                 closed
             />
-            {/* Eyes */}
-            <Circle x={14} y={5} radius={4} fill="white" />
-            <Circle x={26} y={5} radius={4} fill="white" />
-            <Circle x={14} y={5} radius={2} fill="black" />
-            <Circle x={26} y={5} radius={2} fill="black" />
+            {/* Eyes — squint when singing */}
+            {mouthOpen ? (
+                <>
+                    <Line points={[10, 4, 18, 7]} stroke="black" strokeWidth={2} lineCap="round" />
+                    <Line points={[22, 7, 30, 4]} stroke="black" strokeWidth={2} lineCap="round" />
+                </>
+            ) : (
+                <>
+                    <Circle x={14} y={5} radius={4} fill="white" />
+                    <Circle x={26} y={5} radius={4} fill="white" />
+                    <Circle x={14} y={5} radius={2} fill="black" />
+                    <Circle x={26} y={5} radius={2} fill="black" />
+                </>
+            )}
             {/* Nose */}
             <Circle x={20} y={12} radius={2} fill="#FF6B6B" />
+            {/* Mouth — open when singing */}
+            {mouthOpen && (
+                <Line points={[15, 15, 20, 20, 25, 15]} stroke="#FF6B6B" strokeWidth={2} lineCap="round" lineJoin="round" />
+            )}
             {/* Direction indicator (arrow) */}
             <Line
                 points={[40, 25, 55, 25, 50, 20, 55, 25, 50, 30]}
@@ -128,6 +162,8 @@ const VisualStage = forwardRef<VisualStageRef, VisualStageProps>(({
     const [consoleOutput, setConsoleOutput] = useState<string[]>([])
     const [isExecuting, setIsExecuting] = useState(false)
     const animationRef = useRef<number | null>(null)
+    const [costume, setCostume] = useState(0)
+    const costumeRef = useRef(0)
 
     // Initialize sprite position
     useEffect(() => {
@@ -224,6 +260,53 @@ const VisualStage = forwardRef<VisualStageRef, VisualStageProps>(({
                 await new Promise(resolve => setTimeout(resolve, command.value * 1000))
                 break
             }
+
+            case 'changeX': {
+                const newX = Math.max(20, Math.min(width - 20, currentSprite.x + command.value))
+                await animateValue(currentSprite.x, newX, ANIMATION_DURATION, (val) => {
+                    setSpritePosition(val, useAppStore.getState().sprite.y)
+                })
+                setConsoleOutput(prev => [...prev, `↔️ Ubah X sebesar ${command.value}`])
+                break
+            }
+
+            case 'changeY': {
+                const newY = Math.max(20, Math.min(height - 20, currentSprite.y - command.value))
+                await animateValue(currentSprite.y, newY, ANIMATION_DURATION, (val) => {
+                    setSpritePosition(useAppStore.getState().sprite.x, val)
+                })
+                setConsoleOutput(prev => [...prev, `↕️ Ubah Y sebesar ${command.value}`])
+                break
+            }
+
+            case 'goTo': {
+                const targetX = Math.max(20, Math.min(width - 20, width / 2 + command.x))
+                const targetY = Math.max(20, Math.min(height - 20, height / 2 - command.y))
+                const startX = currentSprite.x
+                const startY = currentSprite.y
+                await animateValue(0, 1, ANIMATION_DURATION, (progress) => {
+                    setSpritePosition(
+                        startX + (targetX - startX) * progress,
+                        startY + (targetY - startY) * progress
+                    )
+                })
+                setConsoleOutput(prev => [...prev, `📍 Pergi ke (${command.x}, ${command.y})`])
+                break
+            }
+
+            case 'nextCostume': {
+                costumeRef.current = (costumeRef.current + 1) % 2
+                setCostume(costumeRef.current)
+                setConsoleOutput(prev => [...prev, `🎭 Ganti kostum`])
+                break
+            }
+
+            case 'playSound': {
+                playCatSound()
+                setConsoleOutput(prev => [...prev, `🔊 Meow!`])
+                await new Promise(resolve => setTimeout(resolve, 450))
+                break
+            }
         }
     }, [width, height, animateValue, setSpritePosition, setSpriteRotation])
 
@@ -265,6 +348,8 @@ const VisualStage = forwardRef<VisualStageRef, VisualStageProps>(({
         }
         setSpritePosition(width / 2, height / 2)
         setSpriteRotation(0)
+        costumeRef.current = 0
+        setCostume(0)
         setConsoleOutput([])
         setIsExecuting(false)
         setAnimating(false)
@@ -313,7 +398,7 @@ const VisualStage = forwardRef<VisualStageRef, VisualStageProps>(({
                         <GridBackground width={width} height={height} />
 
                         {/* Cat Sprite */}
-                        <CatSprite x={sprite.x} y={sprite.y} rotation={sprite.rotation} />
+                        <CatSprite x={sprite.x} y={sprite.y} rotation={sprite.rotation} costume={costume} />
 
                         {/* Position indicator */}
                         <Text
