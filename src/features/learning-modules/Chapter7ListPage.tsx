@@ -43,9 +43,15 @@ const activities = [
 ]
 
 export default function Chapter7ListPage() {
-    const { isGamified, userSession } = useAppStore()
+    const { isGamified, userSession, setGamificationMode } = useAppStore()
     const navigate = useNavigate()
     const [completed, setCompleted] = useState<Set<string>>(new Set())
+
+    // Group A: Chapter 7 non-gamified | Group B: Chapter 7 gamified
+    useEffect(() => {
+        if (!userSession) return
+        setGamificationMode(userSession.groupType === 'B')
+    }, [userSession?.groupType])
 
     useEffect(() => {
         supabase.auth.getSession().then(({ data }) => {

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import BeadPatternActivity from '../../components/activities/BeadPatternActivity'
 import { useTimeTracker } from '../../hooks/useTimeTracker'
+import { supabase, upsertUserProgress } from '../../lib/supabase'
+import { useAppStore } from '../../stores/useAppStore'
 
 // Timer display component
 function TimerDisplay({ getElapsedTime }: { getElapsedTime: () => number }) {
@@ -27,6 +29,14 @@ function TimerDisplay({ getElapsedTime }: { getElapsedTime: () => number }) {
 }
 
 export default function Chapter2Page() {
+    const { userSession, setGamificationMode, isGamified } = useAppStore()
+
+    // Group A: Chapter 2 gamified | Group B: Chapter 2 non-gamified
+    useEffect(() => {
+        if (!userSession) return
+        setGamificationMode(userSession.groupType === 'A')
+    }, [userSession?.groupType])
+
     const { finishActivity, getElapsedTime } = useTimeTracker({
         activityName: 'chapter2_bead_pattern',
         autoStart: true,
@@ -35,6 +45,13 @@ export default function Chapter2Page() {
     const handleComplete = async (score: number) => {
         const timeSpent = await finishActivity()
         console.log(`Chapter 2 completed! Score: ${score}, Time: ${timeSpent}s`)
+
+        const { data } = await supabase.auth.getSession()
+        const uid = data.session?.user?.id
+        if (uid) {
+            await upsertUserProgress(uid, 'chapter2', 'completed', timeSpent)
+            await upsertUserProgress(uid, 'posttest_chapter2', 'unlocked')
+        }
     }
 
     return (
@@ -53,10 +70,24 @@ export default function Chapter2Page() {
                     </p>
                 </div>
 
-                {/* Timer */}
-                <div className="bg-white border border-slate-200 shadow-sm px-5 py-3 rounded-xl text-center">
-                    <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">Waktu Belajar</p>
-                    <TimerDisplay getElapsedTime={getElapsedTime} />
+                <div className="flex items-center gap-3">
+                    {/* XP badge (gamified only) */}
+                    {isGamified && userSession && (
+                        <div className="flex flex-col gap-2">
+                            <span className="text-sm px-4 py-1.5 bg-yellow-50 text-yellow-600 rounded-full font-bold border border-yellow-200 shadow-sm text-center">
+                                ⭐ {userSession.xp} XP
+                            </span>
+                            <span className="text-sm px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-full font-bold border border-indigo-200 shadow-sm text-center">
+                                🏅 Level {userSession.level}
+                            </span>
+                        </div>
+                    )}
+
+                    {/* Timer */}
+                    <div className="bg-white border border-slate-200 shadow-sm px-5 py-3 rounded-xl text-center">
+                        <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">Waktu Belajar</p>
+                        <TimerDisplay getElapsedTime={getElapsedTime} />
+                    </div>
                 </div>
             </div>
 

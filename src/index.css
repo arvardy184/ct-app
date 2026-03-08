@@ -84,6 +84,24 @@ body {
   background-color: rgba(0, 0, 0, 0.05) !important;
 }
 
+/* Fix: Blockly text visibility in light mode */
+.blocklyText {
+  fill: #1e293b !important;
+}
+
+.blocklyTreeLabel {
+  color: #1e293b !important;
+}
+
+.blocklyEditableText text,
+.blocklyNonEditableText text {
+  fill: #ffffff !important;
+}
+
+.blocklyDropdownText {
+  fill: #1e293b !important;
+}
+
 /* Animation classes */
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out;

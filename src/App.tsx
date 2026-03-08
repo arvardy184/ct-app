@@ -16,6 +16,9 @@ import AdminUsersPage from './features/admin/AdminUsersPage'
 import AdminLogsPage from './features/admin/AdminLogsPage'
 import AdminQuestionsPage from './features/admin/AdminQuestionsPage'
 import TestPage from './features/learning-modules/TestPage'
+import ProfileDashboardPage from './features/profile/ProfileDashboardPage'
+import QuestionnairePage from './features/questionnaire/QuestionnairePage'
+import ProfileSetupPage from './features/auth/ProfileSetupPage'
 
 function App() {
     return (
@@ -23,6 +26,7 @@ function App() {
             {/* ── Auth Routes (public) ── */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/profile-setup" element={<ProfileSetupPage />} />
 
             {/* ── Protected Routes (browser with login) ── */}
             <Route path="/" element={
@@ -31,9 +35,11 @@ function App() {
                 </AuthGuard>
             }>
                 <Route index element={<DashboardPage />} />
+                <Route path="profile" element={<ProfileDashboardPage />} />
                 <Route path="chapter2" element={<Chapter2Page />} />
                 <Route path="chapter7" element={<Chapter7ListPage />} />
                 <Route path="test/:type/:chapter" element={<TestPage />} />
+                <Route path="questionnaire/:chapter" element={<QuestionnairePage />} />
             </Route>
 
             {/* ── Admin Routes ── */}

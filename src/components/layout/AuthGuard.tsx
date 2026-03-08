@@ -2,7 +2,7 @@ import { Navigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
-    const { session, isLoading } = useAuth()
+    const { session, isLoading, needsProfileSetup } = useAuth()
 
     if (isLoading) {
         return (
@@ -17,6 +17,10 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
     if (!session) {
         return <Navigate to="/login" replace />
+    }
+
+    if (needsProfileSetup) {
+        return <Navigate to="/profile-setup" replace />
     }
 
     return <>{children}</>

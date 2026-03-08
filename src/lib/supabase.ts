@@ -76,6 +76,17 @@ export async function signInWithEmail(email: string, password: string) {
     return { user: data.user, error: null }
 }
 
+export async function signInWithGoogle() {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+            redirectTo: `${window.location.origin}/`,
+        },
+    })
+    if (error) return { url: null, error: error.message }
+    return { url: data.url, error: null }
+}
+
 export async function signUpWithEmail(email: string, password: string) {
     const { data, error } = await supabase.auth.signUp({ email, password })
     if (error) return { user: null, error: error.message }
@@ -90,20 +101,36 @@ export async function createProfile(
     userId: string,
     name: string,
     email: string,
-    groupType: 'A' | 'B'
+    groupType: 'A' | 'B',
+    className?: string
 ) {
     const { error } = await supabase.from('profiles').insert({
         id: userId,
         name,
         email,
+        class_name: className ?? null,
         group_type: groupType,
     })
     if (error) {
         console.error('Error creating profile:', error)
         return false
     }
-    // Also create gamification_stats row
     await supabase.from('gamification_stats').insert({ user_id: userId })
+    return true
+}
+
+export async function updateProfile(
+    userId: string,
+    updates: { name?: string; class_name?: string; group_type?: 'A' | 'B' }
+) {
+    const { error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', userId)
+    if (error) {
+        console.error('Error updating profile:', error)
+        return false
+    }
     return true
 }
 
@@ -182,6 +209,117 @@ export async function getCompletedActivities(userId: string): Promise<Set<string
         .eq('user_id', userId)
     if (error || !data) return new Set()
     return new Set(data.map(r => r.activity_name as string))
+}
+
+// ===== User Progress Functions =====
+
+export async function getUserProgress(userId: string) {
+    const { data, error } = await supabase
+        .from('user_progress')
+        .select('*')
+        .eq('user_id', userId)
+
+    if (error) {
+        console.error('Error fetching user progress:', error)
+        return []
+    }
+    return data ?? []
+}
+
+export async function upsertUserProgress(
+    userId: string,
+    chapterId: string,
+    status: 'locked' | 'unlocked' | 'completed',
+    timeSpentSeconds?: number
+) {
+    const payload: Record<string, unknown> = {
+        user_id: userId,
+        chapter_id: chapterId,
+        status,
+    }
+    if (timeSpentSeconds !== undefined) {
+        payload.time_spent_seconds = timeSpentSeconds
+    }
+
+    const { data, error } = await supabase
+        .from('user_progress')
+        .upsert(payload, { onConflict: 'user_id,chapter_id' })
+        .select()
+        .single()
+
+    if (error) {
+        console.error('Error upserting user progress:', error)
+        return null
+    }
+    return data
+}
+
+export async function initializeUserProgress(userId: string) {
+    const chapters = [
+        { chapter_id: 'pretest_chapter2', status: 'unlocked' },
+        { chapter_id: 'chapter2', status: 'locked' },
+        { chapter_id: 'posttest_chapter2', status: 'locked' },
+        { chapter_id: 'questionnaire_chapter2', status: 'locked' },
+        { chapter_id: 'pretest_chapter7', status: 'locked' },
+        { chapter_id: 'chapter7', status: 'locked' },
+        { chapter_id: 'posttest_chapter7', status: 'locked' },
+        { chapter_id: 'questionnaire_chapter7', status: 'locked' },
+    ]
+
+    const rows = chapters.map(c => ({
+        user_id: userId,
+        chapter_id: c.chapter_id,
+        status: c.status,
+        time_spent_seconds: 0,
+    }))
+
+    const { error } = await supabase
+        .from('user_progress')
+        .upsert(rows, { onConflict: 'user_id,chapter_id' })
+
+    if (error) {
+        console.error('Error initializing user progress:', error)
+        return false
+    }
+    return true
+}
+
+// ===== Questionnaire Functions =====
+
+export async function saveQuestionnaire(
+    userId: string,
+    chapter: 'chapter2' | 'chapter7',
+    items: Record<string, number>
+) {
+    const { data, error } = await supabase
+        .from('questionnaires')
+        .insert({
+            user_id: userId,
+            chapter,
+            ...items,
+        })
+        .select()
+        .single()
+
+    if (error) {
+        console.error('Error saving questionnaire:', error)
+        return null
+    }
+    return data
+}
+
+export async function getQuestionnaires(userId: string) {
+    const { data, error } = await supabase
+        .from('questionnaires')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+
+    if (error) {
+        console.error('Error fetching questionnaires:', error)
+        return []
+    }
+    return data ?? []
 }
 
 // ===== SQL Schema (run this in Supabase SQL Editor) =====

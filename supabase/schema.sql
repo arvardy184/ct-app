@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   email TEXT,
+  class_name TEXT,
   group_type TEXT CHECK (group_type IN ('A', 'B')) NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -272,6 +273,78 @@ CREATE TRIGGER profiles_updated_at
 
 CREATE TRIGGER gamification_stats_updated_at
   BEFORE UPDATE ON gamification_stats
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- ============================================
+-- 8. QUESTIONNAIRES TABLE (RIMMS 12 Items)
+-- Based on ARCS model: Attention, Relevance, Confidence, Satisfaction
+-- ============================================
+CREATE TABLE IF NOT EXISTS questionnaires (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  chapter TEXT CHECK (chapter IN ('chapter2', 'chapter7')) NOT NULL,
+  item_1 INTEGER CHECK (item_1 >= 1 AND item_1 <= 5),
+  item_2 INTEGER CHECK (item_2 >= 1 AND item_2 <= 5),
+  item_3 INTEGER CHECK (item_3 >= 1 AND item_3 <= 5),
+  item_4 INTEGER CHECK (item_4 >= 1 AND item_4 <= 5),
+  item_5 INTEGER CHECK (item_5 >= 1 AND item_5 <= 5),
+  item_6 INTEGER CHECK (item_6 >= 1 AND item_6 <= 5),
+  item_7 INTEGER CHECK (item_7 >= 1 AND item_7 <= 5),
+  item_8 INTEGER CHECK (item_8 >= 1 AND item_8 <= 5),
+  item_9 INTEGER CHECK (item_9 >= 1 AND item_9 <= 5),
+  item_10 INTEGER CHECK (item_10 >= 1 AND item_10 <= 5),
+  item_11 INTEGER CHECK (item_11 >= 1 AND item_11 <= 5),
+  item_12 INTEGER CHECK (item_12 >= 1 AND item_12 <= 5),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE questionnaires ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can insert own questionnaire" ON questionnaires
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can view own questionnaire" ON questionnaires
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Admin can read all questionnaires" ON questionnaires
+  FOR SELECT USING (auth.jwt() ->> 'email' = 'admin@gmail.com');
+
+CREATE INDEX idx_questionnaires_user ON questionnaires(user_id, chapter);
+
+-- ============================================
+-- 9. USER PROGRESS TABLE
+-- Tracks level locking/unlocking per chapter
+-- ============================================
+CREATE TABLE IF NOT EXISTS user_progress (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  chapter_id TEXT NOT NULL,
+  status TEXT CHECK (status IN ('locked', 'unlocked', 'completed')) DEFAULT 'locked',
+  time_spent_seconds INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, chapter_id)
+);
+
+ALTER TABLE user_progress ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can insert own progress" ON user_progress
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can view own progress" ON user_progress
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own progress" ON user_progress
+  FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Admin can read all progress" ON user_progress
+  FOR SELECT USING (auth.jwt() ->> 'email' = 'admin@gmail.com');
+
+CREATE INDEX idx_user_progress_user ON user_progress(user_id);
+
+-- Trigger for updated_at
+CREATE TRIGGER user_progress_updated_at
+  BEFORE UPDATE ON user_progress
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
 -- ============================================

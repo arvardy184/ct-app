@@ -1,12 +1,35 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useAppStore } from '../../stores/useAppStore'
-import { supabase } from '../../lib/supabase'
+import { supabase, upsertUserProgress } from '../../lib/supabase'
 import { fetchQuestions, CHAPTER_LABELS, TYPE_LABELS, type Question } from '../../lib/questionService'
 import { saveTestResult } from '../../lib/testService'
 import type { QuestionType, QuestionChapter } from '../../lib/questionService'
 
 type TestState = 'loading' | 'empty' | 'quiz' | 'submitting' | 'result'
+
+function useTimer() {
+  const startRef = useRef<number>(Date.now())
+  const [elapsed, setElapsed] = useState(0)
+
+  useEffect(() => {
+    startRef.current = Date.now()
+    const interval = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - startRef.current) / 1000))
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [])
+
+  function getElapsed() {
+    return Math.floor((Date.now() - startRef.current) / 1000)
+  }
+
+  const mins = Math.floor(elapsed / 60)
+  const secs = elapsed % 60
+  const formatted = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+
+  return { elapsed, formatted, getElapsed }
+}
 
 export default function TestPage() {
   const { type, chapter } = useParams<{ type: string; chapter: string }>()
@@ -19,6 +42,8 @@ export default function TestPage() {
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [score, setScore] = useState(0)
   const [userId, setUserId] = useState<string | null>(null)
+  const [timeSpent, setTimeSpent] = useState(0)
+  const timer = useTimer()
 
   const questionType = type as QuestionType
   const questionChapter = chapter as QuestionChapter
@@ -55,6 +80,8 @@ export default function TestPage() {
 
   async function handleSubmit() {
     setTestState('submitting')
+    const finalTime = timer.getElapsed()
+    setTimeSpent(finalTime)
 
     let correct = 0
     for (const q of questions) {
@@ -71,6 +98,16 @@ export default function TestPage() {
         total: questions.length,
         answers,
       })
+
+      const progressId = `${questionType}_${questionChapter}`
+      await upsertUserProgress(userId, progressId, 'completed', finalTime)
+
+      // Unlock next step in the flow
+      if (questionType === 'pretest') {
+        await upsertUserProgress(userId, questionChapter, 'unlocked')
+      } else if (questionType === 'posttest') {
+        await upsertUserProgress(userId, `questionnaire_${questionChapter}`, 'unlocked')
+      }
     }
 
     setTestState('result')
@@ -130,7 +167,7 @@ export default function TestPage() {
             <h2 className="text-2xl font-bold text-slate-800 mb-1">
               {passed ? 'Bagus sekali!' : 'Tetap semangat!'}
             </h2>
-            <p className="text-slate-500 text-sm">{typeLabel} • {chapterLabel}</p>
+            <p className="text-slate-500 text-sm">{typeLabel} • {chapterLabel} • {Math.floor(timeSpent / 60)}m {timeSpent % 60}s</p>
           </div>
 
           <div className="p-6 space-y-5">
@@ -248,6 +285,10 @@ export default function TestPage() {
           <div>
             <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">{typeLabel}</p>
             <h1 className="text-slate-800 font-semibold text-sm">{chapterLabel}</h1>
+          </div>
+          <div className="bg-slate-100 rounded-lg px-3 py-1.5 text-center">
+            <p className="text-[10px] text-slate-400 font-semibold uppercase">Waktu</p>
+            <p className="text-slate-800 font-mono font-bold text-sm">{timer.formatted}</p>
           </div>
           <div className="flex-1 max-w-xs">
             <div className="flex justify-between text-xs text-slate-400 mb-1">

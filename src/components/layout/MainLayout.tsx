@@ -1,13 +1,30 @@
+import { useEffect } from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { useAppStore } from '../../stores/useAppStore'
 import GamificationHeader from './GamificationHeader'
 
 export default function MainLayout() {
-    const { isGamified, userSession, toggleGamificationMode } = useAppStore()
+    const { isGamified, userSession, setGamificationMode } = useAppStore()
     const location = useLocation()
+
+    // Group A/B gamification logic based on current route
+    // Group A: Chapter 2 = gamified, Chapter 7 = non-gamified
+    // Group B: Chapter 2 = non-gamified, Chapter 7 = gamified
+    useEffect(() => {
+        if (!userSession) return
+        const path = location.pathname
+        const group = userSession.groupType
+
+        if (path.startsWith('/chapter2')) {
+            setGamificationMode(group === 'A')
+        } else if (path.startsWith('/chapter7')) {
+            setGamificationMode(group === 'B')
+        }
+    }, [location.pathname, userSession?.groupType])
 
     const navLinks = [
         { path: '/', label: 'Dashboard', icon: '🏠' },
+        { path: '/profile', label: 'Profil', icon: '👤' },
         { path: '/chapter2', label: 'Bab 2: Pola & Pattern', icon: '🎨' },
         { path: '/chapter7', label: 'Bab 7: Scratch Visual', icon: '🧩' },
     ]
@@ -59,16 +76,14 @@ export default function MainLayout() {
                             ))}
                         </div>
 
-                        {/* Mode Toggle (for testing/research) */}
-                        <button
-                            onClick={toggleGamificationMode}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${isGamified
+                        <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
+                            isGamified
                                 ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
-                                : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400'
-                                }`}
-                        >
-                            {isGamified ? '🎮 Gamified Mode' : '📝 Standard Mode'}
-                        </button>
+                                : 'bg-white border border-slate-300 text-slate-700'
+                        }`}>
+                            {isGamified ? '🎮 Gamified' : '📝 Standard'}
+                            <span className="text-xs opacity-70">Grup {userSession?.groupType}</span>
+                        </div>
                     </div>
                 </div>
             </nav>
