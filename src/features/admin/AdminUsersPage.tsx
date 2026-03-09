@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   fetchAdminDashboardData,
   type StudentRow,
@@ -122,6 +123,12 @@ export default function AdminUsersPage() {
                 })}
               </p>
             )}
+            <Link
+              to={`/admin/users/${s.id}`}
+              className="mt-4 w-full flex items-center justify-center gap-2 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg transition-colors"
+            >
+              Lihat Detail →
+            </Link>
           </div>
         ))}
       </div>

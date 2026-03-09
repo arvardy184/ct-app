@@ -15,6 +15,7 @@ import AdminDashboardPage from './features/admin/AdminDashboardPage'
 import AdminUsersPage from './features/admin/AdminUsersPage'
 import AdminLogsPage from './features/admin/AdminLogsPage'
 import AdminQuestionsPage from './features/admin/AdminQuestionsPage'
+import AdminStudentDetailPage from './features/admin/AdminStudentDetailPage'
 import TestPage from './features/learning-modules/TestPage'
 import ProfileDashboardPage from './features/profile/ProfileDashboardPage'
 import QuestionnairePage from './features/questionnaire/QuestionnairePage'
@@ -52,6 +53,7 @@ function App() {
                 <Route path="users" element={<AdminUsersPage />} />
                 <Route path="logs" element={<AdminLogsPage />} />
                 <Route path="questions" element={<AdminQuestionsPage />} />
+                <Route path="users/:id" element={<AdminStudentDetailPage />} />
             </Route>
 
             {/* ── Embedded Routes (React Native WebView — no auth guard, token injected) ── */}

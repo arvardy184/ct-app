@@ -64,6 +64,59 @@ export interface ActivityProgress {
   avgScore: number
 }
 
+export interface StudentTestResult {
+  id: string
+  chapter: string
+  type: 'pretest' | 'posttest'
+  score: number
+  total: number
+  completed_at: string
+}
+
+export interface StudentProgress {
+  chapter_id: string
+  status: 'locked' | 'unlocked' | 'completed'
+  time_spent_seconds: number
+}
+
+export interface StudentQuestionnaire {
+  id: string
+  chapter: string
+  item_1: number; item_2: number; item_3: number
+  item_4: number; item_5: number; item_6: number
+  item_7: number; item_8: number; item_9: number
+  item_10: number; item_11: number; item_12: number
+  created_at: string
+}
+
+export interface StudentDetail {
+  profile: AdminProfile & { class_name?: string }
+  gamification: { total_xp: number; level: number; badges_earned: string[] } | null
+  testResults: StudentTestResult[]
+  questionnaires: StudentQuestionnaire[]
+  progress: StudentProgress[]
+}
+
+export async function fetchStudentDetail(userId: string): Promise<StudentDetail | null> {
+  const [profileRes, statsRes, testRes, questRes, progressRes] = await Promise.all([
+    supabase.from('profiles').select('*').eq('id', userId).single(),
+    supabase.from('gamification_stats').select('total_xp,level,badges_earned').eq('user_id', userId).single(),
+    supabase.from('test_results').select('*').eq('user_id', userId).order('completed_at', { ascending: false }),
+    supabase.from('questionnaires').select('*').eq('user_id', userId),
+    supabase.from('user_progress').select('*').eq('user_id', userId),
+  ])
+
+  if (profileRes.error || !profileRes.data) return null
+
+  return {
+    profile: profileRes.data as AdminProfile & { class_name?: string },
+    gamification: statsRes.data ?? null,
+    testResults: (testRes.data ?? []) as StudentTestResult[],
+    questionnaires: (questRes.data ?? []) as StudentQuestionnaire[],
+    progress: (progressRes.data ?? []) as StudentProgress[],
+  }
+}
+
 export async function isAdmin(): Promise<boolean> {
   const { data } = await supabase.auth.getUser()
   return data.user?.email === ADMIN_EMAIL
