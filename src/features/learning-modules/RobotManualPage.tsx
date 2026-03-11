@@ -214,12 +214,27 @@ export default function RobotManualPage() {
     useEffect(() => {
         if (!wsContainerRef.current || wsRef.current) return
 
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+        const isMobile = isTouchDevice || window.innerWidth < 768
+
         wsRef.current = Blockly.inject(wsContainerRef.current, {
             toolbox: robotToolboxConfig,
             grid: { spacing: 20, length: 2, colour: '#cbd5e1', snap: true },
-            zoom: { controls: true, wheel: true, startScale: 0.9, maxScale: 1.8, minScale: 0.5 },
+            zoom: {
+                controls: true,
+                wheel: true,
+                pinch: true,
+                startScale: isMobile ? 1.0 : 0.9,
+                maxScale: 1.8,
+                minScale: 0.4,
+                scaleSpeed: 1.2,
+            },
+            move: {
+                scrollbars: true,
+                drag: true,
+                wheel: true,
+            },
             trashcan: true,
-            scrollbars: true,
             sounds: false,
             renderer: 'zelos',
             theme: Blockly.Theme.defineTheme('robot_theme_light', {
@@ -443,7 +458,7 @@ export default function RobotManualPage() {
             <div className="flex-1 min-h-0 relative">
                 {/* Editor tab */}
                 <div className={`absolute inset-0 ${activeTab === 'editor' ? 'flex' : 'hidden'}`}>
-                    <div ref={wsContainerRef} className="w-full h-full" />
+                    <div ref={wsContainerRef} className="w-full h-full" style={{ touchAction: 'none' }} />
                 </div>
 
                 {/* Grid tab */}

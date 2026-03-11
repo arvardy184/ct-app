@@ -40,6 +40,10 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceRef, BlocklyWorkspaceProps>(
     useEffect(() => {
         if (!blocklyDiv.current || workspaceRef.current) return
 
+        // Detect if running on a touch device / mobile
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+        const isMobile = isTouchDevice || window.innerWidth < 768
+
         const workspace = Blockly.inject(blocklyDiv.current, {
             toolbox: toolboxConfig,
             grid: {
@@ -51,13 +55,18 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceRef, BlocklyWorkspaceProps>(
             zoom: {
                 controls: true,
                 wheel: true,
-                startScale: 0.9,
+                pinch: true,       // Enable pinch-to-zoom on mobile
+                startScale: isMobile ? 1.0 : 0.9,     // Larger scale on mobile for easier tapping
                 maxScale: 2,
-                minScale: 0.4,
+                minScale: 0.3,
                 scaleSpeed: 1.2
             },
+            move: {
+                scrollbars: true,
+                drag: true,        // Allow workspace panning via touch drag
+                wheel: true,       // Allow workspace scroll via mouse wheel
+            },
             trashcan: true,
-            scrollbars: true,
             sounds: false,
             renderer: 'zelos',
             theme: Blockly.Theme.defineTheme('scratch_light', {
@@ -131,7 +140,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceRef, BlocklyWorkspaceProps>(
                 workspaceRef.current = null
             }
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const parseCommands = (code: string): ExecutionCommand[] => {
@@ -225,7 +234,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceRef, BlocklyWorkspaceProps>(
 
             {/* Blockly Workspace */}
             <div className="flex-1 bg-white rounded-xl shadow-sm overflow-hidden border border-slate-200 min-h-0 relative">
-                <div ref={blocklyDiv} className="absolute inset-0" />
+                <div ref={blocklyDiv} className="absolute inset-0" style={{ touchAction: 'none' }} />
             </div>
 
             {/* Generated Code Preview — hanya di desktop */}
