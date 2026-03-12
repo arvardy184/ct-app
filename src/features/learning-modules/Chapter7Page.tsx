@@ -65,6 +65,14 @@ export default function Chapter7Page({ isEmbedded = false }: Chapter7PageProps) 
         }
     }, [getElapsedTime, isEmbedded])
 
+    // Pas balik ke tab 'editor', paksa Blockly recalculate ukuran canvas-nya
+    // supaya tidak blank (efek dari display: none saat di tab 'output')
+    useEffect(() => {
+        if (activeTab === 'editor') {
+            blocklyRef.current?.resize()
+        }
+    }, [activeTab])
+
     const hasCode = commands.length > 0
 
     return (

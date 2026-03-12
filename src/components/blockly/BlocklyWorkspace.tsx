@@ -22,6 +22,7 @@ export interface BlocklyWorkspaceRef {
     redo: () => void
     getBlockCount: () => number
     hasCode: () => boolean
+    resize: () => void
 }
 
 const BlocklyWorkspace = forwardRef<BlocklyWorkspaceRef, BlocklyWorkspaceProps>(function BlocklyWorkspace({
@@ -190,6 +191,13 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceRef, BlocklyWorkspaceProps>(
         redo,
         getBlockCount: () => blockCount,
         hasCode: () => generatedCode.trim().length > 0,
+        // Dipanggil setelah tab switch kembali ke editor (display: none → flex)
+        // supaya Blockly tahu ukuran container yang benar dan tidak blank.
+        resize: () => {
+            requestAnimationFrame(() => {
+                if (workspaceRef.current) Blockly.svgResize(workspaceRef.current)
+            })
+        },
     }), [clearWorkspace, undo, redo, blockCount, generatedCode])
 
     return (

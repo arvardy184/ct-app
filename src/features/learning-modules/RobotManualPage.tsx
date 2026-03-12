@@ -210,6 +210,16 @@ export default function RobotManualPage() {
         }
     }, [])
 
+    // Pas balik ke tab 'editor', paksa Blockly recalculate ukuran canvas-nya
+    // supaya tidak blank (efek dari display: none saat di tab 'grid')
+    useEffect(() => {
+        if (activeTab === 'editor') {
+            requestAnimationFrame(() => {
+                if (wsRef.current) Blockly.svgResize(wsRef.current)
+            })
+        }
+    }, [activeTab])
+
     // Inject Blockly into the container once
     useEffect(() => {
         if (!wsContainerRef.current || wsRef.current) return
