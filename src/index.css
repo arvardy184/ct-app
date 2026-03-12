@@ -93,9 +93,14 @@ body {
   color: #1e293b !important;
 }
 
-.blocklyEditableText text,
+/* Label teks di blok berwarna (non-editable) → putih supaya kontras */
 .blocklyNonEditableText text {
   fill: #ffffff !important;
+}
+
+/* Teks di dalam input field angka/string (editable) → gelap karena background-nya terang */
+.blocklyEditableText text {
+  fill: #1e293b !important;
 }
 
 .blocklyDropdownText {
