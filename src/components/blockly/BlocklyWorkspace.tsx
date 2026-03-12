@@ -23,6 +23,8 @@ export interface BlocklyWorkspaceRef {
     getBlockCount: () => number
     hasCode: () => boolean
     resize: () => void
+    /** Toggle toolbox sidebar. Returns state baru (true = visible). */
+    toggleToolbox: () => boolean
 }
 
 const BlocklyWorkspace = forwardRef<BlocklyWorkspaceRef, BlocklyWorkspaceProps>(function BlocklyWorkspace({
@@ -36,6 +38,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceRef, BlocklyWorkspaceProps>(
     const workspaceRef = useRef<Blockly.WorkspaceSvg | null>(null)
     const [generatedCode, setGeneratedCode] = useState<string>('')
     const [blockCount, setBlockCount] = useState(0)
+    const [toolboxVisible, setToolboxVisible] = useState(true)
 
     // Initialize Blockly workspace
     useEffect(() => {
@@ -198,7 +201,19 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceRef, BlocklyWorkspaceProps>(
                 if (workspaceRef.current) Blockly.svgResize(workspaceRef.current)
             })
         },
-    }), [clearWorkspace, undo, redo, blockCount, generatedCode])
+        toggleToolbox: () => {
+            const ws = workspaceRef.current
+            if (!ws) return true
+            const toolbox = ws.getToolbox()
+            if (!toolbox) return true
+            const next = !toolboxVisible
+            toolbox.setVisible(next)
+            // Resize supaya canvas mengisi ruang toolbox yang hilang/muncul
+            requestAnimationFrame(() => Blockly.svgResize(ws))
+            setToolboxVisible(next)
+            return next
+        },
+    }), [clearWorkspace, undo, redo, blockCount, generatedCode, toolboxVisible])
 
     return (
         <div className="flex flex-col w-full h-full gap-3 p-2 bg-slate-50">
