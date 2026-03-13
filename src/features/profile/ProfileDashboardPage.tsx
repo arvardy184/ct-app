@@ -14,7 +14,7 @@ const ARCS_LABELS: Record<string, string[]> = {
 
 function getArcsAverage(q: QuestionnaireResponse, dimension: string): number {
   const keys = ARCS_LABELS[dimension] ?? []
-  const values = keys.map(k => (q as Record<string, number>)[k] ?? 0)
+  const values = keys.map(k => (q as unknown as Record<string, number>)[k] ?? 0)
   return values.reduce((a, b) => a + b, 0) / values.length
 }
 

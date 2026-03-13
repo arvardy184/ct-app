@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { useAppStore } from '../../stores/useAppStore'
 import { supabase, upsertUserProgress } from '../../lib/supabase'
 import { fetchQuestions, CHAPTER_LABELS, TYPE_LABELS, type Question } from '../../lib/questionService'
 import { saveTestResult } from '../../lib/testService'
@@ -34,7 +33,6 @@ function useTimer() {
 export default function TestPage() {
   const { type, chapter } = useParams<{ type: string; chapter: string }>()
   const navigate = useNavigate()
-  const { userSession } = useAppStore()
 
   const [testState, setTestState] = useState<TestState>('loading')
   const [questions, setQuestions] = useState<Question[]>([])

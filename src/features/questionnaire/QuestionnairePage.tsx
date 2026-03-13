@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { useAppStore } from '../../stores/useAppStore'
 import { supabase, saveQuestionnaire, upsertUserProgress } from '../../lib/supabase'
 
 const RIMMS_ITEMS = [
@@ -36,7 +35,6 @@ type PageState = 'form' | 'submitting' | 'done'
 export default function QuestionnairePage() {
   const { chapter } = useParams<{ chapter: string }>()
   const navigate = useNavigate()
-  const { userSession } = useAppStore()
 
   const [answers, setAnswers] = useState<Record<string, number>>({})
   const [pageState, setPageState] = useState<PageState>('form')

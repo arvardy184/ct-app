@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import {
   fetchAdminDashboardData,
   type StudentRow,
-  ADMIN_EMAIL,
 } from '../../lib/adminService'
 import { arrayToCsv, downloadCsv } from '../../lib/exportUtils'
 

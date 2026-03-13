@@ -210,15 +210,6 @@ export default function RobotManualPage() {
         }
     }, [])
 
-    // Pas balik ke tab 'editor', paksa Blockly recalculate ukuran canvas-nya
-    // supaya tidak blank (efek dari display: none saat di tab 'grid')
-    useEffect(() => {
-        if (activeTab === 'editor') {
-            requestAnimationFrame(() => {
-                if (wsRef.current) Blockly.svgResize(wsRef.current)
-            })
-        }
-    }, [activeTab])
 
     // Inject Blockly into the container once
     useEffect(() => {
@@ -466,13 +457,28 @@ export default function RobotManualPage() {
 
             {/* ── Tab Content ──────────────────────────────────────── */}
             <div className="flex-1 min-h-0 relative">
-                {/* Editor tab */}
-                <div className={`absolute inset-0 ${activeTab === 'editor' ? 'flex' : 'hidden'}`}>
+                {/* Editor tab — visibility:hidden bukan display:none supaya
+                    Blockly tetap tau dimensi container-nya (Android WebView issue) */}
+                <div
+                    className="absolute inset-0 flex"
+                    style={{
+                        visibility: activeTab === 'editor' ? 'visible' : 'hidden',
+                        pointerEvents: activeTab === 'editor' ? 'auto' : 'none',
+                        zIndex: activeTab === 'editor' ? 1 : 0,
+                    }}
+                >
                     <div ref={wsContainerRef} className="w-full h-full" style={{ touchAction: 'none' }} />
                 </div>
 
                 {/* Grid tab */}
-                <div className={`absolute inset-0 overflow-y-auto bg-slate-50 ${activeTab === 'grid' ? 'flex flex-col' : 'hidden'}`}>
+                <div
+                    className="absolute inset-0 overflow-y-auto bg-slate-50 flex flex-col"
+                    style={{
+                        visibility: activeTab === 'grid' ? 'visible' : 'hidden',
+                        pointerEvents: activeTab === 'grid' ? 'auto' : 'none',
+                        zIndex: activeTab === 'grid' ? 1 : 0,
+                    }}
+                >
                     <div className="flex flex-col items-center gap-4 p-4 pb-8">
                         {/* Win banner */}
                         {allReached && (

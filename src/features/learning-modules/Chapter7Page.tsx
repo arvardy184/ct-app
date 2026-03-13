@@ -66,14 +66,6 @@ export default function Chapter7Page({ isEmbedded = false }: Chapter7PageProps) 
         }
     }, [getElapsedTime, isEmbedded])
 
-    // Pas balik ke tab 'editor', paksa Blockly recalculate ukuran canvas-nya
-    // supaya tidak blank (efek dari display: none saat di tab 'output')
-    useEffect(() => {
-        if (activeTab === 'editor') {
-            blocklyRef.current?.resize()
-        }
-    }, [activeTab])
-
     const hasCode = commands.length > 0
 
     return (
@@ -82,8 +74,16 @@ export default function Chapter7Page({ isEmbedded = false }: Chapter7PageProps) 
             {/* ── Tab Content ────────────────────────────────────────── */}
             <div className="flex-1 min-h-0 relative">
 
-                {/* Editor Tab */}
-                <div className={`absolute inset-0 ${activeTab === 'editor' ? 'flex' : 'hidden'}`}>
+                {/* Editor Tab — pakai visibility:hidden bukan display:none supaya
+                    Blockly tetap tau dimensi container-nya (Android WebView issue) */}
+                <div
+                    className="absolute inset-0 flex"
+                    style={{
+                        visibility: activeTab === 'editor' ? 'visible' : 'hidden',
+                        pointerEvents: activeTab === 'editor' ? 'auto' : 'none',
+                        zIndex: activeTab === 'editor' ? 1 : 0,
+                    }}
+                >
                     <BlocklyWorkspace
                         ref={blocklyRef}
                         onCommandsGenerated={handleCommandsGenerated}
@@ -94,7 +94,14 @@ export default function Chapter7Page({ isEmbedded = false }: Chapter7PageProps) 
                 </div>
 
                 {/* Output Tab */}
-                <div className={`absolute inset-0 overflow-y-auto overflow-x-hidden bg-slate-50 ${activeTab === 'output' ? 'flex flex-col' : 'hidden'}`}>
+                <div
+                    className="absolute inset-0 overflow-y-auto overflow-x-hidden bg-slate-50 flex flex-col"
+                    style={{
+                        visibility: activeTab === 'output' ? 'visible' : 'hidden',
+                        pointerEvents: activeTab === 'output' ? 'auto' : 'none',
+                        zIndex: activeTab === 'output' ? 1 : 0,
+                    }}
+                >
                     <div className="flex flex-col items-center gap-4 p-4 pb-2">
                         <div className="w-full flex items-center justify-between">
                             <span className="text-slate-700 text-sm font-bold">🎬 Visual Stage</span>
