@@ -80,15 +80,7 @@ export default function APActivityPage({ activityId }: APActivityPageProps) {
     const { isGamified } = useAppStore()
     const { getElapsedTime } = useTimeTracker({ activityName: activityId, autoStart: true })
 
-    // Re-resize Blockly whenever editor tab becomes visible again
-    // (display:none → flex transition doesn't trigger ResizeObserver reliably)
-    useEffect(() => {
-        if (activeTab === 'editor') {
-            requestAnimationFrame(() => blocklyRef.current?.resize())
-        }
-    }, [activeTab])
-
-    // Auth token injection from native
+// Auth token injection from native
     useEffect(() => {
         if (isWebView()) {
             setAuthTokenFromNative().then((ok) => {
@@ -170,8 +162,8 @@ export default function APActivityPage({ activityId }: APActivityPageProps) {
             {/* ── Tab Content ────────────────────────────────────────── */}
             <div className="flex-1 min-h-0 relative">
 
-                {/* Editor Tab */}
-                <div className={`absolute inset-0 ${activeTab === 'editor' ? 'flex' : 'hidden'}`}>
+                {/* Editor Tab — never display:none so Blockly SVG keeps its layout dimensions */}
+                <div className={`absolute inset-0 flex ${activeTab === 'editor' ? 'z-10' : 'opacity-0 pointer-events-none z-0'}`}>
                     <BlocklyWorkspace
                         ref={blocklyRef}
                         onCommandsGenerated={handleCommandsGenerated}
@@ -182,7 +174,7 @@ export default function APActivityPage({ activityId }: APActivityPageProps) {
                 </div>
 
                 {/* Output Tab */}
-                <div className={`absolute inset-0 overflow-y-auto bg-slate-50 ${activeTab === 'output' ? 'flex flex-col' : 'hidden'}`}>
+                <div className={`absolute inset-0 overflow-y-auto bg-slate-50 ${activeTab === 'output' ? 'flex flex-col z-10' : 'opacity-0 pointer-events-none z-0'}`}>
                     <div className="flex flex-col items-center gap-4 p-4 pb-2">
                         {/* Status */}
                         <div className="w-full flex items-center justify-between">
