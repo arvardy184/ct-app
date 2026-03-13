@@ -103,12 +103,7 @@ export default function Chapter7Page({ isEmbedded = false }: Chapter7PageProps) 
                     }}
                 >
                     <div className="flex flex-col items-center gap-4 p-4 pb-2">
-                        <div className="w-full flex items-center justify-between">
-                            <span className="text-slate-700 text-sm font-bold">🎬 Visual Stage</span>
-                            <span className={`text-xs px-2.5 py-1 rounded-full font-bold border ${isRunning ? 'bg-green-50/80 text-green-700 border-green-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
-                                {isRunning ? '▶ Berjalan...' : '⏸ Siap'}
-                            </span>
-                        </div>
+                
                         <div className="w-full bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-200">
                             <VisualStage
                                 ref={stageRef}

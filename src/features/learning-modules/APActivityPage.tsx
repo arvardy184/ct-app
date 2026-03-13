@@ -176,13 +176,7 @@ export default function APActivityPage({ activityId }: APActivityPageProps) {
                 {/* Output Tab */}
                 <div className={`absolute inset-0 overflow-y-auto bg-slate-50 ${activeTab === 'output' ? 'flex flex-col z-10' : 'opacity-0 pointer-events-none z-0'}`}>
                     <div className="flex flex-col items-center gap-4 p-4 pb-2">
-                        {/* Status */}
-                        <div className="w-full flex items-center justify-between">
-                            <span className="text-slate-700 text-sm font-bold">🎬 Visual Stage</span>
-                            <span className={`text-xs px-2.5 py-1 rounded-full font-bold border ${isRunning ? 'bg-green-50/80 text-green-700 border-green-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
-                                {isRunning ? '▶ Berjalan...' : '⏸ Siap'}
-                            </span>
-                        </div>
+ 
 
                         {/* Canvas */}
                         <div className="w-full bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-200">

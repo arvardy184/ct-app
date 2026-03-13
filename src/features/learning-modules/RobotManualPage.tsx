@@ -195,6 +195,7 @@ export default function RobotManualPage() {
     const [isRunning, setIsRunning] = useState(false)
     const [activeTab, setActiveTab] = useState<'editor' | 'grid'>('editor')
     const [allReached, setAllReached] = useState(false)
+    const [toolboxVisible, setToolboxVisible] = useState(true)
 
     const navigate = useNavigate()
     const { isGamified } = useAppStore()
@@ -265,6 +266,17 @@ export default function RobotManualPage() {
 
         return () => { wsRef.current?.dispose(); wsRef.current = null }
     }, []) // only on mount
+
+    // Restore toolbox visibility when switching back to editor tab
+    useEffect(() => {
+        if (activeTab === 'editor' && wsRef.current) {
+            const toolbox = wsRef.current.getToolbox() as any
+            toolbox?.setVisible(toolboxVisible)
+            requestAnimationFrame(() => {
+                if (wsRef.current) Blockly.svgResize(wsRef.current)
+            })
+        }
+    }, [activeTab]) // eslint-disable-line react-hooks/exhaustive-deps
 
     // Save/load workspace XML when switching sprite tabs
     function switchSpriteTab(newIndex: number) {
@@ -408,6 +420,18 @@ export default function RobotManualPage() {
         setAllReached(false)
     }
 
+    function toggleToolbox() {
+        if (!wsRef.current) return
+        const toolbox = wsRef.current.getToolbox() as any
+        if (!toolbox) return
+        const next = !toolboxVisible
+        toolbox.setVisible(next)
+        requestAnimationFrame(() => {
+            if (wsRef.current) Blockly.svgResize(wsRef.current)
+        })
+        setToolboxVisible(next)
+    }
+
     // ── Responsive cell size ──────────────────────────────────────────────────
     const LABEL = 20
     const availableWidth = window.innerWidth - 32
@@ -545,6 +569,19 @@ export default function RobotManualPage() {
                         className="px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 font-bold rounded-xl text-sm border border-red-100
                                    disabled:opacity-40 active:scale-95 transition-all duration-150 flex-shrink-0"
                     >🗑️</button>
+                    {activeTab === 'editor' && (
+                        <button
+                            onClick={toggleToolbox}
+                            title={toolboxVisible ? 'Sembunyikan blok' : 'Tampilkan blok'}
+                            className={`px-4 py-2.5 font-bold rounded-xl text-sm active:scale-95 transition-all duration-150 flex-shrink-0 border
+                                ${toolboxVisible
+                                    ? 'bg-indigo-50 text-indigo-600 border-indigo-200 hover:bg-indigo-100'
+                                    : 'bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700'
+                                }`}
+                        >
+                            {toolboxVisible ? '◀ Blok' : '▶ Blok'}
+                        </button>
+                    )}
                 </div>
 
                 {/* Tab switcher */}
