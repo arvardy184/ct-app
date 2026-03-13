@@ -80,6 +80,14 @@ export default function APActivityPage({ activityId }: APActivityPageProps) {
     const { isGamified } = useAppStore()
     const { getElapsedTime } = useTimeTracker({ activityName: activityId, autoStart: true })
 
+    // Re-resize Blockly whenever editor tab becomes visible again
+    // (display:none → flex transition doesn't trigger ResizeObserver reliably)
+    useEffect(() => {
+        if (activeTab === 'editor') {
+            requestAnimationFrame(() => blocklyRef.current?.resize())
+        }
+    }, [activeTab])
+
     // Auth token injection from native
     useEffect(() => {
         if (isWebView()) {

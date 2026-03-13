@@ -101,6 +101,12 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceRef, BlocklyWorkspaceProps>(
         // Force correct sizing after layout settles (flex/absolute containers can report 0 on first paint)
         const rafId = requestAnimationFrame(() => {
             if (workspaceRef.current) Blockly.svgResize(workspaceRef.current)
+            // Mobile touch fix: set after Blockly injects its SVG elements
+            if (blocklyDiv.current) {
+                blocklyDiv.current.style.touchAction = 'none'
+                const svg = blocklyDiv.current.querySelector('.blocklySvg') as HTMLElement | null
+                if (svg) svg.style.touchAction = 'none'
+            }
         })
 
         // Keep Blockly sized when the container is resized (e.g. challenge banner toggle)
