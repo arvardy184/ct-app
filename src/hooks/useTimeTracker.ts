@@ -47,8 +47,7 @@ export function useTimeTracker({ activityName, autoStart = true }: UseTimeTracke
         }
     }, [activityName, autoStart, startActivity, stopActivity, userSession, activityStartTime])
 
-    // Manually finish and log activity
-    const finishActivity = useCallback(async () => {
+    const finishActivity = useCallback(async (score?: number, completed?: boolean) => {
         const elapsed = stopActivity()
 
         if (userSession && elapsed > 0) {
@@ -56,7 +55,9 @@ export function useTimeTracker({ activityName, autoStart = true }: UseTimeTracke
                 userSession.id,
                 activityName,
                 elapsed,
-                attemptCountRef.current
+                attemptCountRef.current,
+                score,
+                completed,
             )
         }
 

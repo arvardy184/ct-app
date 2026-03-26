@@ -1,7 +1,7 @@
-import { useState, FormEvent } from 'react'
+import { useState, useEffect, FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '../../stores/useAppStore'
-import { supabase, createProfile, initializeUserProgress } from '../../lib/supabase'
+import { supabase, createProfile, getProfile, initializeUserProgress } from '../../lib/supabase'
 
 export default function ProfileSetupPage() {
     const navigate = useNavigate()
@@ -11,6 +11,30 @@ export default function ProfileSetupPage() {
     const [groupType, setGroupType] = useState<'A' | 'B'>('A')
     const [error, setError] = useState('')
     const [isLoading, setIsLoading] = useState(false)
+
+    useEffect(() => {
+        async function checkExistingProfile() {
+            const { data } = await supabase.auth.getSession()
+            const user = data.session?.user
+            if (!user) return
+
+            const profile = await getProfile(user.id)
+            if (profile) {
+                setUserSession({
+                    id: user.id,
+                    name: profile.name,
+                    email: user.email ?? '',
+                    className: profile.class_name ?? undefined,
+                    groupType: profile.group_type as 'A' | 'B',
+                    xp: 0,
+                    level: 1,
+                    badges: [],
+                })
+                navigate('/', { replace: true })
+            }
+        }
+        checkExistingProfile()
+    }, [])
 
     async function handleSubmit(e: FormEvent) {
         e.preventDefault()

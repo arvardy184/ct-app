@@ -1,9 +1,11 @@
 import { useState, FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { signUpWithEmail, createProfile, signInWithGoogle } from '../../lib/supabase'
+import { signUpWithEmail, createProfile, signInWithGoogle, initializeUserProgress } from '../../lib/supabase'
+import { useAppStore } from '../../stores/useAppStore'
 
 export default function RegisterPage() {
     const navigate = useNavigate()
+    const { setUserSession } = useAppStore()
     const [name, setName] = useState('')
     const [className, setClassName] = useState('')
     const [email, setEmail] = useState('')
@@ -28,9 +30,28 @@ export default function RegisterPage() {
             return
         }
 
-        await createProfile(user.id, name, email, groupType, className || undefined)
-        navigate('/')
+        const ok = await createProfile(user.id, name.trim(), email, groupType, className.trim() || undefined)
+        if (!ok) {
+            setError('Gagal menyimpan profil. Coba lagi.')
+            setIsLoading(false)
+            return
+        }
+
+        await initializeUserProgress(user.id)
+
+        setUserSession({
+            id: user.id,
+            name: name.trim(),
+            email,
+            className: className.trim() || undefined,
+            groupType,
+            xp: 0,
+            level: 1,
+            badges: [],
+        })
+
         setIsLoading(false)
+        navigate('/')
     }
 
     async function handleGoogleRegister() {

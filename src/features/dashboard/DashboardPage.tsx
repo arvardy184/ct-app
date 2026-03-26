@@ -122,6 +122,7 @@ export default function DashboardPage() {
                 const preResult = getTestResult(ch, 'pretest')
                 const postResult = getTestResult(ch, 'posttest')
                 const chapterLocked = isLocked(module.id)
+                const chapterCompleted = getProgressStatus(module.id) === 'completed'
                 const postLocked = isLocked(`posttest_${module.id}`)
                 const questLocked = isLocked(`questionnaire_${module.id}`)
                 const questCompleted = getProgressStatus(`questionnaire_${module.id}`) === 'completed'
@@ -160,13 +161,22 @@ export default function DashboardPage() {
 
                             {/* Chapter / Materi */}
                             <div className={`rounded-xl border p-3 text-center ${
-                                chapterLocked
-                                    ? 'bg-slate-50 border-slate-200 opacity-50'
-                                    : 'bg-indigo-50 border-indigo-200'
+                                chapterCompleted
+                                    ? 'bg-emerald-50 border-emerald-200'
+                                    : chapterLocked
+                                        ? 'bg-slate-50 border-slate-200 opacity-50'
+                                        : 'bg-indigo-50 border-indigo-200'
                             }`}>
-                                <p className="text-lg mb-1">{chapterLocked ? '🔒' : '📖'}</p>
+                                <p className="text-lg mb-1">{chapterCompleted ? '✅' : chapterLocked ? '🔒' : '📖'}</p>
                                 <p className="text-xs font-bold text-slate-700">Materi</p>
-                                {chapterLocked ? (
+                                {chapterCompleted ? (
+                                    <>
+                                        <p className="text-[10px] text-emerald-600 font-semibold mt-1">Selesai</p>
+                                        <Link to={module.path} className="text-[10px] font-semibold text-indigo-600 underline mt-0.5 block">
+                                            Belajar Lagi →
+                                        </Link>
+                                    </>
+                                ) : chapterLocked ? (
                                     <p className="text-[10px] text-slate-400 mt-1">Selesaikan Pre-test</p>
                                 ) : (
                                     <Link to={module.path} className="text-[10px] font-semibold text-indigo-600 underline mt-1 block">

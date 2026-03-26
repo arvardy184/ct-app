@@ -43,7 +43,7 @@ export default function Chapter2Page() {
     })
 
     const handleComplete = async (score: number) => {
-        const timeSpent = await finishActivity()
+        const timeSpent = await finishActivity(score, true)
         console.log(`Chapter 2 completed! Score: ${score}, Time: ${timeSpent}s`)
 
         const { data } = await supabase.auth.getSession()

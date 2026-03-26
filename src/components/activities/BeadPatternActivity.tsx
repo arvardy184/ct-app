@@ -160,20 +160,18 @@ export default function BeadPatternActivity({ onComplete }: BeadPatternActivityP
                 setIsCorrect(true)
                 setShowHint(false)
 
-                // Calculate XP
                 const xpEarned = Math.max(level.xpReward - (attempts * 5), 5)
                 if (isGamified) {
                     addXP(xpEarned)
                 }
 
                 setScore(prev => prev + xpEarned)
+                const accumulatedScore = score + xpEarned
 
-                // Award badge for completing all easy levels
                 if (currentLevel === 2 && isGamified) {
                     addBadge('🎯')
                 }
 
-                // Move to next level after delay
                 setTimeout(() => {
                     if (currentLevel < patternLevels.length - 1) {
                         setCurrentLevel(prev => prev + 1)
@@ -182,13 +180,12 @@ export default function BeadPatternActivity({ onComplete }: BeadPatternActivityP
                         setShowHint(false)
                         setAttempts(0)
                     } else {
-                        // Completed all levels!
                         setIsComplete(true)
                         if (isGamified) {
                             addBadge('🏆')
-                            addXP(100) // Bonus XP
+                            addXP(100)
                         }
-                        onComplete?.(score)
+                        onComplete?.(accumulatedScore)
                     }
                 }, 1500)
             } else {

@@ -205,11 +205,13 @@ const VisualStage = forwardRef<VisualStageRef, VisualStageProps>(({
     // Execute a single command
     const executeCommand = useCallback(async (command: ExecutionCommand): Promise<void> => {
         const currentSprite = useAppStore.getState().sprite
-        const ANIMATION_DURATION = 300 // ms
+        const ANIMATION_DURATION = 500 // ms — cukup lambat agar arah gerakan terlihat jelas
 
         switch (command.type) {
             case 'move': {
-                const radians = (currentSprite.rotation - 90) * (Math.PI / 180)
+                // rotation=0 → sprite menghadap kanan (sesuai arah arrow visual)
+                // cos(0)=1, sin(0)=0 → gerak ke kanan ✓
+                const radians = currentSprite.rotation * (Math.PI / 180)
                 const targetX = currentSprite.x + Math.cos(radians) * command.value * 3
                 const targetY = currentSprite.y + Math.sin(radians) * command.value * 3
 

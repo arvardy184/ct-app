@@ -104,18 +104,21 @@ export async function createProfile(
     groupType: 'A' | 'B',
     className?: string
 ) {
-    const { error } = await supabase.from('profiles').insert({
+    const { error } = await supabase.from('profiles').upsert({
         id: userId,
         name,
         email,
         class_name: className ?? null,
         group_type: groupType,
-    })
+    }, { onConflict: 'id' })
     if (error) {
         console.error('Error creating profile:', error)
         return false
     }
-    await supabase.from('gamification_stats').insert({ user_id: userId })
+    await supabase.from('gamification_stats').upsert(
+        { user_id: userId },
+        { onConflict: 'user_id' }
+    )
     return true
 }
 
@@ -201,12 +204,12 @@ export async function getProfile(userId: string) {
     return data
 }
 
-// Get set of activity_names the user has completed (any log = done)
 export async function getCompletedActivities(userId: string): Promise<Set<string>> {
     const { data, error } = await supabase
         .from('activity_logs')
         .select('activity_name')
         .eq('user_id', userId)
+        .eq('completed', true)
     if (error || !data) return new Set()
     return new Set(data.map(r => r.activity_name as string))
 }
