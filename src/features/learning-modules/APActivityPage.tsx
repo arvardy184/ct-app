@@ -75,6 +75,7 @@ export default function APActivityPage({ activityId }: APActivityPageProps) {
     const [activeTab, setActiveTab] = useState<'editor' | 'output'>('editor')
     const [blockCount, setBlockCount] = useState(0)
     const [showChallenge, setShowChallenge] = useState(true)
+    const [toolboxVisible, setToolboxVisible] = useState(true)
 
     const navigate = useNavigate()
     const { isGamified } = useAppStore()
@@ -241,6 +242,20 @@ export default function APActivityPage({ activityId }: APActivityPageProps) {
                                        active:scale-95 transition-all duration-150 flex-shrink-0"
                             title="Redo"
                         >↪️</button>
+                        <button
+                            onClick={() => {
+                                const next = blocklyRef.current?.toggleToolbox()
+                                if (next !== undefined) setToolboxVisible(next)
+                            }}
+                            className={`px-3 py-2.5 rounded-xl text-sm font-bold transition-all duration-150 flex-shrink-0
+                                ${toolboxVisible
+                                    ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
+                                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                                }`}
+                            title={toolboxVisible ? 'Sembunyikan panel blok' : 'Tampilkan panel blok'}
+                        >
+                            {toolboxVisible ? '◀' : '▶'}
+                        </button>
                         <div className="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-500 font-bold whitespace-nowrap flex-shrink-0">
                             🧱 {blockCount}
                         </div>

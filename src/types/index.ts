@@ -104,6 +104,8 @@ export type ExecutionCommand =
     | { type: 'goTo'; x: number; y: number }
     | { type: 'nextCostume' }
     | { type: 'playSound' }
+    | { type: 'repeat'; times: number; body: ExecutionCommand[] }
+    | { type: 'forever'; body: ExecutionCommand[] }
 
 // Blockly Workspace State
 export interface WorkspaceState {

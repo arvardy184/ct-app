@@ -164,6 +164,8 @@ const VisualStage = forwardRef<VisualStageRef, VisualStageProps>(({
     const animationRef = useRef<number | null>(null)
     const [costume, setCostume] = useState(0)
     const costumeRef = useRef(0)
+    // Flag untuk menghentikan forever loop saat reset diklik
+    const isRunningRef = useRef(false)
 
     // Initialize sprite position
     useEffect(() => {
@@ -171,7 +173,7 @@ const VisualStage = forwardRef<VisualStageRef, VisualStageProps>(({
         setSpriteRotation(0)
     }, [width, height, setSpritePosition, setSpriteRotation])
 
-    // Animation helper
+    // Animation helper — resolve early jika isRunningRef menjadi false (user klik Reset)
     const animateValue = useCallback((
         start: number,
         end: number,
@@ -182,6 +184,12 @@ const VisualStage = forwardRef<VisualStageRef, VisualStageProps>(({
             const startTime = performance.now()
 
             const animate = (currentTime: number) => {
+                // Stop animation jika reset dipanggil
+                if (!isRunningRef.current) {
+                    resolve()
+                    return
+                }
+
                 const elapsed = currentTime - startTime
                 const progress = Math.min(elapsed / duration, 1)
 
@@ -309,6 +317,29 @@ const VisualStage = forwardRef<VisualStageRef, VisualStageProps>(({
                 await new Promise(resolve => setTimeout(resolve, 450))
                 break
             }
+
+            case 'repeat': {
+                setConsoleOutput(prev => [...prev, `🔁 Ulangi ${command.times}x`])
+                for (let i = 0; i < command.times; i++) {
+                    if (!isRunningRef.current) break
+                    for (const cmd of command.body) {
+                        if (!isRunningRef.current) break
+                        await executeCommand(cmd)
+                    }
+                }
+                break
+            }
+
+            case 'forever': {
+                setConsoleOutput(prev => [...prev, `♾️ Selamanya — klik Reset untuk berhenti`])
+                while (isRunningRef.current) {
+                    for (const cmd of command.body) {
+                        if (!isRunningRef.current) break
+                        await executeCommand(cmd)
+                    }
+                }
+                break
+            }
         }
     }, [width, height, animateValue, setSpritePosition, setSpriteRotation])
 
@@ -316,6 +347,7 @@ const VisualStage = forwardRef<VisualStageRef, VisualStageProps>(({
     const executeCommands = useCallback(async (commands: ExecutionCommand[]) => {
         if (commands.length === 0) return
 
+        isRunningRef.current = true
         setIsExecuting(true)
         setAnimating(true)
         setConsoleOutput(['▶️ Memulai eksekusi...'])
@@ -323,6 +355,7 @@ const VisualStage = forwardRef<VisualStageRef, VisualStageProps>(({
 
         try {
             for (const command of commands) {
+                if (!isRunningRef.current) break
                 await executeCommand(command)
             }
 
@@ -343,11 +376,10 @@ const VisualStage = forwardRef<VisualStageRef, VisualStageProps>(({
         }
     }, [executeCommand, isGamified, addXP, setAnimating, onExecutionStart, onExecutionComplete])
 
-    // Reset stage
+    // Reset stage — set isRunningRef=false untuk menghentikan forever/repeat loops.
+    // animateValue akan resolve sendiri di frame berikutnya saat isRunningRef=false.
     const reset = useCallback(() => {
-        if (animationRef.current) {
-            cancelAnimationFrame(animationRef.current)
-        }
+        isRunningRef.current = false
         setSpritePosition(width / 2, height / 2)
         setSpriteRotation(0)
         costumeRef.current = 0

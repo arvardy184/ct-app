@@ -153,28 +153,66 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceRef, BlocklyWorkspaceProps>(
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
-    const parseCommands = (code: string): ExecutionCommand[] => {
+    // Parse satu baris jadi command primitif (non-loop). Null = bukan command yg dikenal.
+    const parseSingleLine = (line: string): ExecutionCommand | null => {
+        const moveMatch = line.match(/moveForward\((\d+)\)/)
+        if (moveMatch) return { type: 'move', value: parseInt(moveMatch[1]) }
+        const turnRightMatch = line.match(/turnRight\((\d+)\)/)
+        if (turnRightMatch) return { type: 'turnRight', value: parseInt(turnRightMatch[1]) }
+        const turnLeftMatch = line.match(/turnLeft\((\d+)\)/)
+        if (turnLeftMatch) return { type: 'turnLeft', value: parseInt(turnLeftMatch[1]) }
+        const waitMatch = line.match(/wait\(([\d.]+)\)/)
+        if (waitMatch) return { type: 'wait', value: parseFloat(waitMatch[1]) }
+        const changeXMatch = line.match(/changeX\((-?\d+)\)/)
+        if (changeXMatch) return { type: 'changeX', value: parseInt(changeXMatch[1]) }
+        const changeYMatch = line.match(/changeY\((-?\d+)\)/)
+        if (changeYMatch) return { type: 'changeY', value: parseInt(changeYMatch[1]) }
+        const goToMatch = line.match(/goTo\((-?\d+),\s*(-?\d+)\)/)
+        if (goToMatch) return { type: 'goTo', x: parseInt(goToMatch[1]), y: parseInt(goToMatch[2]) }
+        if (line.includes('nextCostume()')) return { type: 'nextCostume' }
+        if (line.includes('playSound()')) return { type: 'playSound' }
+        return null
+    }
+
+    // Recursive parser — cursor adalah objek agar bisa di-mutate lintas rekursi
+    const parseBlock = (lines: string[], cursor: { i: number }): ExecutionCommand[] => {
         const commands: ExecutionCommand[] = []
-        const lines = code.split('\n')
-        for (const line of lines) {
-            const moveMatch = line.match(/moveForward\((\d+)\)/)
-            if (moveMatch) commands.push({ type: 'move', value: parseInt(moveMatch[1]) })
-            const turnRightMatch = line.match(/turnRight\((\d+)\)/)
-            if (turnRightMatch) commands.push({ type: 'turnRight', value: parseInt(turnRightMatch[1]) })
-            const turnLeftMatch = line.match(/turnLeft\((\d+)\)/)
-            if (turnLeftMatch) commands.push({ type: 'turnLeft', value: parseInt(turnLeftMatch[1]) })
-            const waitMatch = line.match(/wait\(([\d.]+)\)/)
-            if (waitMatch) commands.push({ type: 'wait', value: parseFloat(waitMatch[1]) })
-            const changeXMatch = line.match(/changeX\((-?\d+)\)/)
-            if (changeXMatch) commands.push({ type: 'changeX', value: parseInt(changeXMatch[1]) })
-            const changeYMatch = line.match(/changeY\((-?\d+)\)/)
-            if (changeYMatch) commands.push({ type: 'changeY', value: parseInt(changeYMatch[1]) })
-            const goToMatch = line.match(/goTo\((-?\d+),\s*(-?\d+)\)/)
-            if (goToMatch) commands.push({ type: 'goTo', x: parseInt(goToMatch[1]), y: parseInt(goToMatch[2]) })
-            if (line.includes('nextCostume()')) commands.push({ type: 'nextCostume' })
-            if (line.includes('playSound()')) commands.push({ type: 'playSound' })
+        while (cursor.i < lines.length) {
+            const raw = lines[cursor.i]
+            const line = raw.trim()
+            cursor.i++
+
+            if (!line) continue
+
+            // Akhir blok loop — kembalikan ke caller
+            if (line === '//REPEAT_END' || line === '//FOREVER_END') return commands
+
+            // Repeat N kali
+            const repeatMatch = line.match(/^\/\/REPEAT_START:(\d+)$/)
+            if (repeatMatch) {
+                const times = parseInt(repeatMatch[1])
+                const body = parseBlock(lines, cursor) // rekursi, konsumsi sampai REPEAT_END
+                commands.push({ type: 'repeat', times, body })
+                continue
+            }
+
+            // Forever loop
+            if (line === '//FOREVER_START') {
+                const body = parseBlock(lines, cursor) // rekursi, konsumsi sampai FOREVER_END
+                commands.push({ type: 'forever', body })
+                continue
+            }
+
+            // Command biasa
+            const cmd = parseSingleLine(line)
+            if (cmd) commands.push(cmd)
         }
         return commands
+    }
+
+    const parseCommands = (code: string): ExecutionCommand[] => {
+        const lines = code.split('\n')
+        return parseBlock(lines, { i: 0 })
     }
 
     const clearWorkspace = useCallback(() => {

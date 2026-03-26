@@ -223,7 +223,7 @@ javascriptGenerator.forBlock['kejadian_mulai'] = function () {
 javascriptGenerator.forBlock['kontrol_ulangi'] = function (block: Blockly.Block) {
     const times = block.getFieldValue('TIMES')
     const statements = javascriptGenerator.statementToCode(block, 'DO')
-    return `for (let i = 0; i < ${times}; i++) {\n${statements}}\n`
+    return `//REPEAT_START:${times}\n${statements}//REPEAT_END\n`
 }
 
 javascriptGenerator.forBlock['tunggu'] = function (block: Blockly.Block) {
@@ -239,8 +239,7 @@ javascriptGenerator.forBlock['kontrol_jika'] = function (block: Blockly.Block) {
 
 javascriptGenerator.forBlock['kontrol_selamanya'] = function (block: Blockly.Block) {
     const statements = javascriptGenerator.statementToCode(block, 'DO')
-    // Limit iterations to prevent infinite loops
-    return `for (let _forever = 0; _forever < 100; _forever++) {\n${statements}}\n`
+    return `//FOREVER_START\n${statements}//FOREVER_END\n`
 }
 
 javascriptGenerator.forBlock['ubah_x'] = function (block: Blockly.Block) {
