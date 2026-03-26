@@ -171,6 +171,8 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceRef, BlocklyWorkspaceProps>(
         if (goToMatch) return { type: 'goTo', x: parseInt(goToMatch[1]), y: parseInt(goToMatch[2]) }
         if (line.includes('nextCostume()')) return { type: 'nextCostume' }
         if (line.includes('playSound()')) return { type: 'playSound' }
+        if (line.includes('bounceOnEdge()')) return { type: 'bounceOnEdge' }
+        if (line.includes('startSound()')) return { type: 'startSound' }
         return null
     }
 
@@ -184,8 +186,8 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceRef, BlocklyWorkspaceProps>(
 
             if (!line) continue
 
-            // Akhir blok loop — kembalikan ke caller
-            if (line === '//REPEAT_END' || line === '//FOREVER_END') return commands
+            // Akhir blok — kembalikan ke caller
+            if (line === '//REPEAT_END' || line === '//FOREVER_END' || line === '//IF_END') return commands
 
             // Repeat N kali
             const repeatMatch = line.match(/^\/\/REPEAT_START:(\d+)$/)
@@ -200,6 +202,20 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceRef, BlocklyWorkspaceProps>(
             if (line === '//FOREVER_START') {
                 const body = parseBlock(lines, cursor) // rekursi, konsumsi sampai FOREVER_END
                 commands.push({ type: 'forever', body })
+                continue
+            }
+
+            // If at edge
+            if (line === '//IF_AT_EDGE_START') {
+                const body = parseBlock(lines, cursor)
+                commands.push({ type: 'ifAtEdge', body })
+                continue
+            }
+
+            // If NOT at edge
+            if (line === '//IF_NOT_AT_EDGE_START') {
+                const body = parseBlock(lines, cursor)
+                commands.push({ type: 'ifNotAtEdge', body })
                 continue
             }
 

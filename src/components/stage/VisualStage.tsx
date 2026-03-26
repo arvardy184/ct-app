@@ -340,6 +340,60 @@ const VisualStage = forwardRef<VisualStageRef, VisualStageProps>(({
                 }
                 break
             }
+
+            case 'bounceOnEdge': {
+                const s = useAppStore.getState().sprite
+                const atLeft = s.x <= 25
+                const atRight = s.x >= width - 25
+                const atTop = s.y <= 25
+                const atBottom = s.y >= height - 25
+
+                if (atLeft || atRight || atTop || atBottom) {
+                    let r = s.rotation
+                    // Flip komponen horizontal jika kena kiri/kanan
+                    if (atLeft || atRight) r = 180 - r
+                    // Flip komponen vertikal jika kena atas/bawah
+                    if (atTop || atBottom) r = -r
+                    // Normalkan ke 0-360
+                    r = ((r % 360) + 360) % 360
+                    setSpriteRotation(r)
+                    setConsoleOutput(prev => [...prev, `↩️ Pantul dari tepi`])
+                }
+                break
+            }
+
+            case 'startSound': {
+                // Non-blocking: mainkan suara tapi langsung lanjut ke blok berikutnya
+                playCatSound()
+                setConsoleOutput(prev => [...prev, `🔊 Mulai suara... (lanjut)`])
+                break
+            }
+
+            case 'ifAtEdge': {
+                const s = useAppStore.getState().sprite
+                const atEdge = s.x <= 25 || s.x >= width - 25 || s.y <= 25 || s.y >= height - 25
+                if (atEdge) {
+                    setConsoleOutput(prev => [...prev, `🛑 Di ujung — jalankan aksi`])
+                    for (const cmd of command.body) {
+                        if (!isRunningRef.current) break
+                        await executeCommand(cmd)
+                    }
+                }
+                break
+            }
+
+            case 'ifNotAtEdge': {
+                const s = useAppStore.getState().sprite
+                const atEdge = s.x <= 25 || s.x >= width - 25 || s.y <= 25 || s.y >= height - 25
+                if (!atEdge) {
+                    setConsoleOutput(prev => [...prev, `✅ Belum di ujung — jalankan aksi`])
+                    for (const cmd of command.body) {
+                        if (!isRunningRef.current) break
+                        await executeCommand(cmd)
+                    }
+                }
+                break
+            }
         }
     }, [width, height, animateValue, setSpritePosition, setSpriteRotation])
 

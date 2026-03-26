@@ -171,6 +171,49 @@ Blockly.Blocks['pergi_ke'] = {
     }
 }
 
+// 12a. PANTUL DARI TEPI (If on edge, bounce)
+Blockly.Blocks['pantul_dari_tepi'] = {
+    init: function (this: Blockly.Block) {
+        this.appendDummyInput()
+            .appendField('↩️ Pantul dari Tepi')
+        this.setPreviousStatement(true, null)
+        this.setNextStatement(true, null)
+        this.setColour('#FFBF00')
+        this.setTooltip('Jika sprite menyentuh tepi stage, arah gerak dibalik otomatis')
+        this.setHelpUrl('')
+    }
+}
+
+// 12b. JIKA MENYENTUH UJUNG (If at edge)
+Blockly.Blocks['jika_di_ujung'] = {
+    init: function (this: Blockly.Block) {
+        this.appendDummyInput()
+            .appendField('🛑 Jika Menyentuh Ujung')
+        this.appendStatementInput('DO')
+            .setCheck(null)
+        this.setPreviousStatement(true, null)
+        this.setNextStatement(true, null)
+        this.setColour('#FFBF00')
+        this.setTooltip('Jalankan blok di dalamnya hanya jika sprite berada di tepi stage')
+        this.setHelpUrl('')
+    }
+}
+
+// 12c. JIKA TIDAK MENYENTUH UJUNG (If NOT at edge)
+Blockly.Blocks['jika_tidak_di_ujung'] = {
+    init: function (this: Blockly.Block) {
+        this.appendDummyInput()
+            .appendField('✅ Jika Tidak di Ujung')
+        this.appendStatementInput('DO')
+            .setCheck(null)
+        this.setPreviousStatement(true, null)
+        this.setNextStatement(true, null)
+        this.setColour('#FFBF00')
+        this.setTooltip('Jalankan blok di dalamnya hanya jika sprite belum menyentuh tepi stage')
+        this.setHelpUrl('')
+    }
+}
+
 // 12. GANTI KOSTUM (Next Costume)
 Blockly.Blocks['ganti_kostum'] = {
     init: function (this: Blockly.Block) {
@@ -180,6 +223,19 @@ Blockly.Blocks['ganti_kostum'] = {
         this.setNextStatement(true, null)
         this.setColour('#CF63CF')
         this.setTooltip('Ganti tampilan sprite ke kostum berikutnya')
+        this.setHelpUrl('')
+    }
+}
+
+// 14. MULAI SUARA (Start Sound - non-blocking)
+Blockly.Blocks['mulai_suara'] = {
+    init: function (this: Blockly.Block) {
+        this.appendDummyInput()
+            .appendField('🔊 Mulai Suara Kucing')
+        this.setPreviousStatement(true, null)
+        this.setNextStatement(true, null)
+        this.setColour('#CF63CF')
+        this.setTooltip('Mainkan suara kucing dan LANGSUNG lanjut ke blok berikutnya (tidak menunggu)')
         this.setHelpUrl('')
     }
 }
@@ -254,8 +310,26 @@ javascriptGenerator.forBlock['pergi_ke'] = function (block: Blockly.Block) {
     return `goTo(${block.getFieldValue('X')}, ${block.getFieldValue('Y')});\n`
 }
 
+javascriptGenerator.forBlock['pantul_dari_tepi'] = function () {
+    return `bounceOnEdge();\n`
+}
+
+javascriptGenerator.forBlock['jika_di_ujung'] = function (block: Blockly.Block) {
+    const statements = javascriptGenerator.statementToCode(block, 'DO')
+    return `//IF_AT_EDGE_START\n${statements}//IF_END\n`
+}
+
+javascriptGenerator.forBlock['jika_tidak_di_ujung'] = function (block: Blockly.Block) {
+    const statements = javascriptGenerator.statementToCode(block, 'DO')
+    return `//IF_NOT_AT_EDGE_START\n${statements}//IF_END\n`
+}
+
 javascriptGenerator.forBlock['ganti_kostum'] = function () {
     return `nextCostume();\n`
+}
+
+javascriptGenerator.forBlock['mulai_suara'] = function () {
+    return `startSound();\n`
 }
 
 javascriptGenerator.forBlock['mainkan_suara'] = function () {
@@ -297,7 +371,10 @@ export const toolboxConfig = {
             contents: [
                 { kind: 'block', type: 'kontrol_ulangi' },
                 { kind: 'block', type: 'tunggu' },
-                { kind: 'block', type: 'kontrol_selamanya' }
+                { kind: 'block', type: 'kontrol_selamanya' },
+                { kind: 'block', type: 'pantul_dari_tepi' },
+                { kind: 'block', type: 'jika_di_ujung' },
+                { kind: 'block', type: 'jika_tidak_di_ujung' },
             ]
         },
         {
@@ -307,6 +384,7 @@ export const toolboxConfig = {
             contents: [
                 { kind: 'block', type: 'ganti_kostum' },
                 { kind: 'block', type: 'mainkan_suara' },
+                { kind: 'block', type: 'mulai_suara' },
             ]
         }
     ]

@@ -106,6 +106,10 @@ export type ExecutionCommand =
     | { type: 'playSound' }
     | { type: 'repeat'; times: number; body: ExecutionCommand[] }
     | { type: 'forever'; body: ExecutionCommand[] }
+    | { type: 'bounceOnEdge' }
+    | { type: 'startSound' }
+    | { type: 'ifAtEdge'; body: ExecutionCommand[] }
+    | { type: 'ifNotAtEdge'; body: ExecutionCommand[] }
 
 // Blockly Workspace State
 export interface WorkspaceState {
