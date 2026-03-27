@@ -5,7 +5,7 @@ import VisualStage, { VisualStageRef } from '../../components/stage/VisualStage'
 import { useTimeTracker } from '../../hooks/useTimeTracker'
 import { useAppStore } from '../../stores/useAppStore'
 import { sendToNative, isWebView } from '../../lib/bridge'
-import { setAuthTokenFromNative, logActivity, supabase } from '../../lib/supabase'
+import { setAuthTokenFromNative, logActivity, upsertUserProgress, supabase } from '../../lib/supabase'
 import type { ExecutionCommand } from '../../types'
 
 // ─── Per-activity configuration ──────────────────────────────────────────────
@@ -115,9 +115,13 @@ export default function APActivityPage({ activityId }: APActivityPageProps) {
             sendToNative({ type: 'ACTIVITY_COMPLETE', data: { score, timeSpent: getElapsedTime() } })
         } else {
             // Browser mode: log directly to Supabase
-            supabase.auth.getSession().then(({ data }) => {
-                if (data.session?.user?.id) {
-                    logActivity(data.session.user.id, activityId.toUpperCase(), getElapsedTime(), 1, score, true)
+            supabase.auth.getSession().then(async ({ data }) => {
+                const uid = data.session?.user?.id
+                if (uid) {
+                    await logActivity(uid, activityId.toUpperCase(), getElapsedTime(), 1, score, true)
+
+                    await upsertUserProgress(uid, 'chapter7', 'completed')
+                    await upsertUserProgress(uid, 'posttest_chapter7', 'unlocked')
                 }
             })
         }

@@ -70,6 +70,7 @@ export interface StudentTestResult {
   type: 'pretest' | 'posttest'
   score: number
   total: number
+  time_spent_seconds?: number | null
   completed_at: string
 }
 

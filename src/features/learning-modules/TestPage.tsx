@@ -95,14 +95,16 @@ export default function TestPage() {
         score: correct,
         total: questions.length,
         answers,
+        timeSpentSeconds: finalTime,
       })
 
       const progressId = `${questionType}_${questionChapter}`
       await upsertUserProgress(userId, progressId, 'completed', finalTime)
 
-      // Unlock next step in the flow
+
       if (questionType === 'pretest') {
         await upsertUserProgress(userId, questionChapter, 'unlocked')
+        await upsertUserProgress(userId, `posttest_${questionChapter}`, 'unlocked')
       } else if (questionType === 'posttest') {
         await upsertUserProgress(userId, `questionnaire_${questionChapter}`, 'unlocked')
       }

@@ -240,18 +240,25 @@ function TestScoreCard({ label, result, color }: {
     <div className={`rounded-xl border p-4 ${c.bg}`}>
       <p className={`text-xs font-bold mb-3 ${c.text}`}>{label}</p>
       {result ? (
-        <div className="flex items-end justify-between">
-          <div>
-            <p className={`text-4xl font-bold ${c.score}`}>
-              {Math.round((result.score / result.total) * 100)}%
+        <div className="space-y-2">
+          <div className="flex items-end justify-between gap-2">
+            <div>
+              <p className={`text-4xl font-bold ${c.score}`}>
+                {Math.round((result.score / result.total) * 100)}%
+              </p>
+              <p className="text-slate-400 text-xs mt-1">{result.score}/{result.total} benar</p>
+            </div>
+            <p className="text-slate-500 text-[10px] shrink-0 text-right">
+              {new Date(result.completed_at).toLocaleDateString('id-ID', {
+                day: 'numeric', month: 'short', year: 'numeric',
+              })}
             </p>
-            <p className="text-slate-400 text-xs mt-1">{result.score}/{result.total} benar</p>
           </div>
-          <p className="text-slate-500 text-[10px]">
-            {new Date(result.completed_at).toLocaleDateString('id-ID', {
-              day: 'numeric', month: 'short', year: 'numeric',
-            })}
-          </p>
+          {result.time_spent_seconds != null && result.time_spent_seconds > 0 && (
+            <p className="text-slate-400 text-xs font-mono">
+              ⏱ Durasi: {formatSeconds(result.time_spent_seconds)}
+            </p>
+          )}
         </div>
       ) : (
         <p className="text-slate-500 text-sm">Belum dikerjakan</p>

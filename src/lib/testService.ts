@@ -9,6 +9,7 @@ export interface TestResult {
   score: number
   total: number
   answers: Record<string, string>
+  time_spent_seconds?: number | null
   completed_at: string
 }
 
@@ -19,19 +20,25 @@ export interface SaveTestInput {
   score: number
   total: number
   answers: Record<string, string>
+  timeSpentSeconds?: number
 }
 
 export async function saveTestResult(input: SaveTestInput): Promise<TestResult | null> {
+  const row: Record<string, unknown> = {
+    user_id: input.userId,
+    chapter: input.chapter,
+    type: input.type,
+    score: input.score,
+    total: input.total,
+    answers: input.answers,
+  }
+  if (input.timeSpentSeconds !== undefined) {
+    row.time_spent_seconds = input.timeSpentSeconds
+  }
+
   const { data, error } = await supabase
     .from('test_results')
-    .insert({
-      user_id: input.userId,
-      chapter: input.chapter,
-      type: input.type,
-      score: input.score,
-      total: input.total,
-      answers: input.answers,
-    })
+    .insert(row)
     .select()
     .single()
 
