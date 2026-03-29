@@ -175,6 +175,7 @@ CREATE TABLE IF NOT EXISTS test_results (
   score INTEGER NOT NULL DEFAULT 0,    -- jumlah jawaban benar
   total INTEGER NOT NULL DEFAULT 0,    -- total soal
   answers JSONB DEFAULT '{}',          -- {question_id: 'A'|'B'|'C'|'D'}
+  time_spent_seconds INTEGER NOT NULL DEFAULT 0, -- durasi pengerjaan (detik)
   completed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

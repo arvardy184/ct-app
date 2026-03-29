@@ -36,17 +36,37 @@ export async function saveTestResult(input: SaveTestInput): Promise<TestResult |
     row.time_spent_seconds = input.timeSpentSeconds
   }
 
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from('test_results')
     .insert(row)
     .select()
     .single()
 
+  if (
+    error &&
+    input.timeSpentSeconds !== undefined &&
+    (error.code === 'PGRST204' || String(error.message).includes('time_spent_seconds'))
+  ) {
+    const { user_id, chapter, type, score, total, answers } = row
+    const retry = await supabase
+      .from('test_results')
+      .insert({ user_id, chapter, type, score, total, answers })
+      .select()
+      .single()
+    data = retry.data
+    error = retry.error
+    if (!error) {
+      console.warn(
+        '[saveTestResult] Kolom time_spent_seconds belum ada. Jalankan migrasi: supabase/migrations/20250327120000_add_time_spent_to_test_results.sql'
+      )
+    }
+  }
+
   if (error) {
     console.error('Error saving test result:', error)
     return null
   }
-  return data
+  return data as TestResult
 }
 
 /** Ambil semua hasil test milik satu user */

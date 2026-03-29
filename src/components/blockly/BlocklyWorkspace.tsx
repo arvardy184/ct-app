@@ -98,6 +98,21 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceRef, BlocklyWorkspaceProps>(
         })
         workspaceRef.current = workspace
 
+        // Override Blockly dialog — cek __asyncPrompt saat dipanggil (bukan saat init)
+        // supaya tidak ada masalah timing antara React render dan injeksi mobile WebView
+        Blockly.dialog.setPrompt((msg: string, defaultValue: string, callback: (val: string | null) => void) => {
+            const asyncPrompt = (window as any).__asyncPrompt
+            if (typeof asyncPrompt === 'function') {
+                // Embedded di mobile: gunakan styled HTML dialog dari injeksi mobile
+                asyncPrompt(msg, defaultValue).then((result: string | null) => {
+                    callback(result)
+                })
+            } else {
+                // Standalone web: fallback ke native browser prompt
+                callback(window.prompt(msg, defaultValue))
+            }
+        })
+
         // Force correct sizing after layout settles (flex/absolute containers can report 0 on first paint)
         const rafId = requestAnimationFrame(() => {
             if (workspaceRef.current) Blockly.svgResize(workspaceRef.current)
