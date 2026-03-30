@@ -4,6 +4,7 @@ import VisualStage, { VisualStageRef } from '../../components/stage/VisualStage'
 import { useTimeTracker } from '../../hooks/useTimeTracker'
 import { useAppStore } from '../../stores/useAppStore'
 import { sendToNative, isWebView } from '../../lib/bridge'
+import { ACTIVITY_XP_BAB7 } from '../../constants/gamification'
 import { setAuthTokenFromNative } from '../../lib/supabase'
 import type { ExecutionCommand } from '../../types'
 
@@ -61,7 +62,7 @@ export default function Chapter7Page({ isEmbedded = false }: Chapter7PageProps) 
         if (isEmbedded) {
             sendToNative({
                 type: 'ACTIVITY_COMPLETE',
-                data: { score: 10, timeSpent: getElapsedTime() }
+                data: { score: ACTIVITY_XP_BAB7['ap-k7-02'], timeSpent: getElapsedTime() }
             })
         }
     }, [getElapsedTime, isEmbedded])

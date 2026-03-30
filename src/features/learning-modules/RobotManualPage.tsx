@@ -8,6 +8,7 @@ import type { RobotCommand } from '../../components/blockly/robotBlocks'
 import { useTimeTracker } from '../../hooks/useTimeTracker'
 import { useAppStore } from '../../stores/useAppStore'
 import { sendToNative, isWebView } from '../../lib/bridge'
+import { ACTIVITY_XP_BAB7 } from '../../constants/gamification'
 import { setAuthTokenFromNative, logActivity, supabase } from '../../lib/supabase'
 
 registerRobotBlocks()
@@ -400,12 +401,12 @@ export default function RobotManualPage() {
             if (reached === SPRITE_DEFS.length) {
                 setAllReached(true)
                 if (isWebView()) {
-                    sendToNative({ type: 'ACTIVITY_COMPLETE', data: { score: 50, timeSpent: getElapsedTime() } })
+                    sendToNative({ type: 'ACTIVITY_COMPLETE', data: { score: ACTIVITY_XP_BAB7['ap-k7-08'], timeSpent: getElapsedTime() } })
                 } else {
                     // Browser mode: log directly to Supabase
                     supabase.auth.getSession().then(({ data }) => {
                         if (data.session?.user?.id) {
-                            logActivity(data.session.user.id, 'AP-K7-08-U', getElapsedTime(), 1, 50, true)
+                            logActivity(data.session.user.id, 'AP-K7-08-U', getElapsedTime(), 1, ACTIVITY_XP_BAB7['ap-k7-08'], true)
                         }
                     })
                 }

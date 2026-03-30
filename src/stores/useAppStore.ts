@@ -1,3 +1,4 @@
+import { xpToLevel } from '../constants/gamification'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { UserSession, ModuleType, SpriteState, ExecutionCommand } from '../types'
@@ -74,7 +75,7 @@ export const useAppStore = create<AppState>()(
                 set((state) => {
                     if (!state.userSession) return state
                     const newXP = state.userSession.xp + amount
-                    const newLevel = Math.floor(newXP / 100) + 1 // Level up every 100 XP
+                    const newLevel = xpToLevel(newXP)
                     return {
                         userSession: {
                             ...state.userSession,

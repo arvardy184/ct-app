@@ -5,6 +5,7 @@ import VisualStage, { VisualStageRef } from '../../components/stage/VisualStage'
 import { useTimeTracker } from '../../hooks/useTimeTracker'
 import { useAppStore } from '../../stores/useAppStore'
 import { sendToNative, isWebView } from '../../lib/bridge'
+import { ACTIVITY_XP_BAB7 } from '../../constants/gamification'
 import { setAuthTokenFromNative, logActivity, upsertUserProgress, supabase } from '../../lib/supabase'
 import type { ExecutionCommand } from '../../types'
 
@@ -110,7 +111,7 @@ export default function APActivityPage({ activityId }: APActivityPageProps) {
 
     const handleExecutionComplete = useCallback(() => {
         setIsRunning(false)
-        const score = Math.max(10, 50 - blockCount)
+        const score = ACTIVITY_XP_BAB7[activityId] ?? Math.max(10, 50 - blockCount)
         if (isWebView()) {
             sendToNative({ type: 'ACTIVITY_COMPLETE', data: { score, timeSpent: getElapsedTime() } })
         } else {
