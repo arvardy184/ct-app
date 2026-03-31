@@ -89,7 +89,9 @@ export default function ProfileSetupPage() {
         <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
             <div className="w-full max-w-md">
                 <div className="text-center mb-8">
-                    <div className="text-6xl mb-4">👤</div>
+                    <div className="emoji-hero mb-4" aria-hidden>
+                        👤
+                    </div>
                     <h1 className="text-3xl font-bold text-slate-800">Lengkapi Profil</h1>
                     <p className="text-slate-500 mt-2 font-medium">
                         Satu langkah lagi sebelum mulai belajar!

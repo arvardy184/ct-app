@@ -137,7 +137,9 @@ export default function TestPage() {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
         <div className="text-center max-w-sm">
-          <p className="text-5xl mb-4">📭</p>
+          <div className="emoji-hero-sm mb-4 mx-auto w-full" aria-hidden>
+            📭
+          </div>
           <h2 className="text-xl font-bold text-slate-800 mb-2">Soal Belum Tersedia</h2>
           <p className="text-slate-500 mb-6">
             Soal {typeLabel} untuk {chapterLabel} belum ditambahkan oleh guru.
@@ -163,7 +165,9 @@ export default function TestPage() {
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 max-w-lg w-full overflow-hidden">
           {/* Score header */}
           <div className={`p-8 text-center ${passed ? 'bg-emerald-50' : 'bg-amber-50'}`}>
-            <div className="text-6xl mb-4">{passed ? '🎉' : '💪'}</div>
+            <div className="emoji-hero mb-4" aria-hidden>
+              {passed ? '🎉' : '💪'}
+            </div>
             <h2 className="text-2xl font-bold text-slate-800 mb-1">
               {passed ? 'Bagus sekali!' : 'Tetap semangat!'}
             </h2>
@@ -205,24 +209,31 @@ export default function TestPage() {
                         isCorrect ? 'bg-emerald-50 border border-emerald-100' : 'bg-red-50 border border-red-100'
                       }`}
                     >
-                      <span className={`mt-0.5 text-base ${isCorrect ? 'text-emerald-500' : 'text-red-500'}`}>
+                      <span className={`mt-0.5 shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${isCorrect ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'}`}>
                         {isCorrect ? '✓' : '✗'}
                       </span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-slate-700 font-medium mb-1 line-clamp-2">
+                        <p className="text-slate-700 font-medium mb-1.5 line-clamp-2">
                           {i + 1}. {q.question_text}
                         </p>
-                        <div className="flex items-center gap-2 text-xs">
-                          {!isCorrect && userAnswer && (
-                            <span className="text-red-500">Jawabanmu: {userAnswer}</span>
-                          )}
-                          {!isCorrect && (
+                        <div className="flex flex-col gap-0.5 text-xs">
+                          {isCorrect ? (
                             <span className="text-emerald-600 font-medium">
-                              Kunci: {q.correct_answer}
+                              Jawaban: {userAnswer}. {q.options.find(o => o.label === userAnswer)?.text}
                             </span>
-                          )}
-                          {!userAnswer && (
-                            <span className="text-slate-400 italic">Tidak dijawab</span>
+                          ) : (
+                            <>
+                              {userAnswer ? (
+                                <span className="text-red-500">
+                                  Jawabanmu: {userAnswer}. {q.options.find(o => o.label === userAnswer)?.text}
+                                </span>
+                              ) : (
+                                <span className="text-slate-400 italic">Tidak dijawab</span>
+                              )}
+                              <span className="text-emerald-600 font-medium">
+                                Jawaban Benar: {q.correct_answer}. {q.options.find(o => o.label === q.correct_answer)?.text}
+                              </span>
+                            </>
                           )}
                         </div>
                       </div>
@@ -260,10 +271,10 @@ export default function TestPage() {
 
   // ── Quiz ─────────────────────────────────────────────────────────────────
   const optionStyles: Record<string, { base: string; selected: string }> = {
-    A: { base: 'border-slate-200 hover:border-sky-300 hover:bg-sky-50', selected: 'border-sky-500 bg-sky-50 text-sky-900' },
-    B: { base: 'border-slate-200 hover:border-emerald-300 hover:bg-emerald-50', selected: 'border-emerald-500 bg-emerald-50 text-emerald-900' },
-    C: { base: 'border-slate-200 hover:border-amber-300 hover:bg-amber-50', selected: 'border-amber-500 bg-amber-50 text-amber-900' },
-    D: { base: 'border-slate-200 hover:border-rose-300 hover:bg-rose-50', selected: 'border-rose-500 bg-rose-50 text-rose-900' },
+    A: { base: 'border-slate-200 hover:border-sky-300 hover:bg-sky-50', selected: 'border-sky-500 bg-sky-50 !text-slate-900' },
+    B: { base: 'border-slate-200 hover:border-emerald-300 hover:bg-emerald-50', selected: 'border-emerald-500 bg-emerald-50 !text-slate-900' },
+    C: { base: 'border-slate-200 hover:border-amber-300 hover:bg-amber-50', selected: 'border-amber-500 bg-amber-50 !text-slate-900' },
+    D: { base: 'border-slate-200 hover:border-rose-300 hover:bg-rose-50', selected: 'border-rose-500 bg-rose-50 !text-slate-900' },
   }
 
   const optionLabelColors: Record<string, string> = {
@@ -336,8 +347,7 @@ export default function TestPage() {
                   }`}>
                     {opt.label}
                   </span>
-                  <span className="text-sm leading-snug">{opt.text}</span>
-                  {isSelected && <span className="ml-auto text-lg">✓</span>}
+                  <span className={`text-sm leading-snug ${isSelected ? '!text-slate-900' : 'text-slate-700'}`}>{opt.text}</span>
                 </button>
               )
             })}

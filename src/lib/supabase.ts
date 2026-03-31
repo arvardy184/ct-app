@@ -104,15 +104,15 @@ export async function createProfile(
     groupType: 'A' | 'B',
     className?: string
 ) {
-    const { error } = await supabase.from('profiles').upsert({
+    const { data: upsertData, error } = await supabase.from('profiles').upsert({
         id: userId,
         name,
         email,
         class_name: className ?? null,
         group_type: groupType,
-    }, { onConflict: 'id' })
-    if (error) {
-        console.error('Error creating profile:', error)
+    }, { onConflict: 'id' }).select('id').single()
+    if (error || !upsertData) {
+        console.error('Error creating profile:', error ?? 'no row returned (RLS block?)')
         return false
     }
     await supabase.from('gamification_stats').upsert(

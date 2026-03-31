@@ -118,6 +118,53 @@ export async function fetchStudentDetail(userId: string): Promise<StudentDetail 
   }
 }
 
+export interface AdminTestResult {
+  id: string
+  user_id: string
+  chapter: string
+  type: 'pretest' | 'posttest'
+  score: number
+  total: number
+  time_spent_seconds?: number | null
+  answers?: Record<string, string> | null
+  completed_at: string
+}
+
+export interface AdminQuestionnaire {
+  id: string
+  user_id: string
+  chapter: string
+  item_1: number; item_2: number; item_3: number
+  item_4: number; item_5: number; item_6: number
+  item_7: number; item_8: number; item_9: number
+  item_10: number; item_11: number; item_12: number
+  created_at: string
+}
+
+export async function fetchAllTestResults(): Promise<AdminTestResult[]> {
+  const { data, error } = await supabase
+    .from('test_results')
+    .select('*')
+    .order('completed_at', { ascending: false })
+  if (error) {
+    console.error('Error fetching test results:', error)
+    return []
+  }
+  return data ?? []
+}
+
+export async function fetchAllQuestionnaires(): Promise<AdminQuestionnaire[]> {
+  const { data, error } = await supabase
+    .from('questionnaires')
+    .select('*')
+    .order('created_at', { ascending: false })
+  if (error) {
+    console.error('Error fetching questionnaires:', error)
+    return []
+  }
+  return data ?? []
+}
+
 export async function isAdmin(): Promise<boolean> {
   const { data } = await supabase.auth.getUser()
   return data.user?.email === ADMIN_EMAIL

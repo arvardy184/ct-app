@@ -20,7 +20,9 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-5xl mb-4 animate-pulse">🔒</div>
+          <div className="emoji-hero-sm mb-4 animate-pulse mx-auto" aria-hidden>
+            🔒
+          </div>
           <p className="text-slate-400 font-medium">Memverifikasi akses admin...</p>
         </div>
       </div>

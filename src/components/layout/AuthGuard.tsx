@@ -8,7 +8,9 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center">
                 <div className="text-center">
-                    <div className="text-5xl mb-4 animate-pulse">🧩</div>
+                    <div className="emoji-hero-sm mb-4 animate-pulse mx-auto" aria-hidden>
+                        🧩
+                    </div>
                     <p className="text-slate-600 font-medium">Memuat...</p>
                 </div>
             </div>

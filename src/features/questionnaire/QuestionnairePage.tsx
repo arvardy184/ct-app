@@ -76,7 +76,9 @@ export default function QuestionnairePage() {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 max-w-md w-full p-8 text-center">
-          <div className="text-6xl mb-4">🎉</div>
+          <div className="emoji-hero mb-4" aria-hidden>
+            🎉
+          </div>
           <h2 className="text-2xl font-bold text-slate-800 mb-2">Terima Kasih!</h2>
           <p className="text-slate-500 mb-6">
             Jawaban kuesioner kamu untuk {CHAPTER_LABELS[questionChapter]} sudah tersimpan.

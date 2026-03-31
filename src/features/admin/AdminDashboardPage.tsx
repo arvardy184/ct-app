@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import {
   fetchAdminDashboardData,
+  fetchAllTestResults,
+  fetchAllQuestionnaires,
   type StudentRow,
   type GroupComparison,
   type ActivityProgress,
@@ -84,6 +86,90 @@ export default function AdminDashboardPage() {
     downloadCsv(csv, `students_${new Date().toISOString().slice(0, 10)}.csv`)
   }
 
+  const handleExportFull = async () => {
+    const profileMap = new Map(profiles.map(p => [p.id, p]))
+    const [testResults, questionnaires] = await Promise.all([
+      fetchAllTestResults(),
+      fetchAllQuestionnaires(),
+    ])
+
+    // Sheet 1: nilai pretest & posttest
+    const testRows = testResults.map(r => {
+      const profile = profileMap.get(r.user_id)
+      return {
+        nama: profile?.name ?? '-',
+        email: profile?.email ?? '-',
+        grup: profile?.group_type ?? '-',
+        bab: r.chapter,
+        jenis: r.type,
+        benar: r.score,
+        total: r.total,
+        persen: r.total > 0 ? Math.round((r.score / r.total) * 100) : 0,
+        waktuDetik: r.time_spent_seconds ?? 0,
+        tanggal: new Date(r.completed_at).toLocaleString('id-ID'),
+      }
+    })
+    downloadCsv(arrayToCsv(testRows, [
+      { key: 'nama',       label: 'Nama'             },
+      { key: 'email',      label: 'Email'            },
+      { key: 'grup',       label: 'Grup'             },
+      { key: 'bab',        label: 'Bab'              },
+      { key: 'jenis',      label: 'Jenis Test'       },
+      { key: 'benar',      label: 'Jawaban Benar'    },
+      { key: 'total',      label: 'Total Soal'       },
+      { key: 'persen',     label: 'Nilai (%)'        },
+      { key: 'waktuDetik', label: 'Waktu (detik)'    },
+      { key: 'tanggal',    label: 'Tanggal'          },
+    ]), `nilai_test_${new Date().toISOString().slice(0, 10)}.csv`)
+
+    // Sheet 2: kuesioner ARCS
+    const qRows = questionnaires.map(q => {
+      const profile = profileMap.get(q.user_id)
+      const items = [q.item_1,q.item_2,q.item_3,q.item_4,q.item_5,q.item_6,q.item_7,q.item_8,q.item_9,q.item_10,q.item_11,q.item_12]
+      const avgPerhatian  = ((q.item_1 + q.item_2 + q.item_3) / 3).toFixed(2)
+      const avgRelevansi  = ((q.item_4 + q.item_5 + q.item_6) / 3).toFixed(2)
+      const avgPercayaDiri= ((q.item_7 + q.item_8 + q.item_9) / 3).toFixed(2)
+      const avgKepuasan   = ((q.item_10+ q.item_11+ q.item_12)/ 3).toFixed(2)
+      const avgTotal      = (items.reduce((a,b)=>a+b,0)/items.length).toFixed(2)
+      return {
+        nama: profile?.name ?? '-',
+        email: profile?.email ?? '-',
+        grup: profile?.group_type ?? '-',
+        bab: q.chapter,
+        item_1:q.item_1, item_2:q.item_2, item_3:q.item_3,
+        item_4:q.item_4, item_5:q.item_5, item_6:q.item_6,
+        item_7:q.item_7, item_8:q.item_8, item_9:q.item_9,
+        item_10:q.item_10, item_11:q.item_11, item_12:q.item_12,
+        avgPerhatian, avgRelevansi, avgPercayaDiri, avgKepuasan, avgTotal,
+        tanggal: new Date(q.created_at).toLocaleString('id-ID'),
+      }
+    })
+    downloadCsv(arrayToCsv(qRows, [
+      { key: 'nama',          label: 'Nama'              },
+      { key: 'email',         label: 'Email'             },
+      { key: 'grup',          label: 'Grup'              },
+      { key: 'bab',           label: 'Bab'               },
+      { key: 'item_1',        label: 'Item 1 (Perhatian)'},
+      { key: 'item_2',        label: 'Item 2 (Perhatian)'},
+      { key: 'item_3',        label: 'Item 3 (Perhatian)'},
+      { key: 'item_4',        label: 'Item 4 (Relevansi)'},
+      { key: 'item_5',        label: 'Item 5 (Relevansi)'},
+      { key: 'item_6',        label: 'Item 6 (Relevansi)'},
+      { key: 'item_7',        label: 'Item 7 (Percaya Diri)'},
+      { key: 'item_8',        label: 'Item 8 (Percaya Diri)'},
+      { key: 'item_9',        label: 'Item 9 (Percaya Diri)'},
+      { key: 'item_10',       label: 'Item 10 (Kepuasan)'},
+      { key: 'item_11',       label: 'Item 11 (Kepuasan)'},
+      { key: 'item_12',       label: 'Item 12 (Kepuasan)'},
+      { key: 'avgPerhatian',  label: 'Avg Perhatian'     },
+      { key: 'avgRelevansi',  label: 'Avg Relevansi'     },
+      { key: 'avgPercayaDiri',label: 'Avg Percaya Diri'  },
+      { key: 'avgKepuasan',   label: 'Avg Kepuasan'      },
+      { key: 'avgTotal',      label: 'Avg Total ARCS'    },
+      { key: 'tanggal',       label: 'Tanggal'           },
+    ]), `kuesioner_arcs_${new Date().toISOString().slice(0, 10)}.csv`)
+  }
+
   const handleExportLogs = () => {
     const profileMap = new Map(profiles.map(p => [p.id, p]))
     const exportData = logs.map(l => {
@@ -133,12 +219,20 @@ export default function AdminDashboardPage() {
             Pantau progress siswa dan data penelitian
           </p>
         </div>
-        <button
-          onClick={loadData}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg text-sm font-medium transition-colors"
-        >
-          🔄 Refresh
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleExportFull}
+            className="flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-sm font-medium transition-colors"
+          >
+            📊 Export Nilai & ARCS
+          </button>
+          <button
+            onClick={loadData}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg text-sm font-medium transition-colors"
+          >
+            🔄 Refresh
+          </button>
+        </div>
       </div>
 
       {/* Summary Cards */}

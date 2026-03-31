@@ -207,7 +207,9 @@ export default function BeadPatternActivity({ onComplete }: BeadPatternActivityP
     if (isComplete) {
         return (
             <div className="flex flex-col items-center justify-center py-16 animate-fade-in bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-                <div className="text-8xl mb-6">🎉</div>
+                <div className="emoji-hero-lg mb-6" aria-hidden>
+                    🎉
+                </div>
                 <h2 className="text-3xl font-black text-slate-800 mb-4">Selamat!</h2>
                 <p className="text-xl text-slate-600 mb-6 font-medium">
                     Kamu telah menyelesaikan semua level!

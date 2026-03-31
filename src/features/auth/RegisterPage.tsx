@@ -68,7 +68,9 @@ export default function RegisterPage() {
         <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
             <div className="w-full max-w-md">
                 <div className="text-center mb-8">
-                    <div className="text-6xl mb-4 drop-shadow-sm">🧩</div>
+                    <div className="emoji-hero mb-4 drop-shadow-sm" aria-hidden>
+                        🧩
+                    </div>
                     <h1 className="text-3xl font-bold text-slate-800">Berpikir Komputasional</h1>
                     <p className="text-slate-500 mt-2 font-medium">Buat akun baru untuk mulai belajar</p>
                 </div>
