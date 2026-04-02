@@ -185,6 +185,7 @@ export default function RobotManualPage() {
     const STEP_DELAY = 280 // ms per grid step
 
     const [activeSprite, setActiveSprite] = useState(0)
+    const activeSpriteRef = useRef(0)
     const [sprites, setSprites] = useState<SpriteState[]>(initSprites)
     const [spriteCodes, setSpriteCodes] = useState<string[]>(['', '', '', ''])
     // Per-sprite workspace XML strings (to swap when switching sprite tabs)
@@ -260,7 +261,7 @@ export default function RobotManualPage() {
             workspaceCodeRef.current = code
             setSpriteCodes(prev => {
                 const next = [...prev]
-                next[activeSprite] = code
+                next[activeSpriteRef.current] = code
                 return next
             })
         })
@@ -294,6 +295,7 @@ export default function RobotManualPage() {
             const dom = Blockly.utils.xml.textToDom(savedXml)
             Blockly.Xml.domToWorkspace(dom, wsRef.current)
         }
+        activeSpriteRef.current = newIndex
         setActiveSprite(newIndex)
     }
 
