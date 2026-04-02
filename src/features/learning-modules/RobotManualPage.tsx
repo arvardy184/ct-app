@@ -319,7 +319,9 @@ export default function RobotManualPage() {
                         col: Math.max(0, Math.min(COLS - 1, sp.col + dCol)),
                         row: Math.max(0, Math.min(ROWS - 1, sp.row + dRow)),
                     })
-                    setSprites([...state])
+                    // Only update this sprite's position — don't overwrite other sprites
+                    const moved = state[spriteIdx]
+                    setSprites(prev => prev.map((sp, i) => i === spriteIdx ? moved : sp))
                     await delay(STEP_DELAY)
                 }
             } else if (cmd.type === 'putar' && cmd.n !== undefined) {
@@ -327,14 +329,17 @@ export default function RobotManualPage() {
                     ...sp,
                     dir: ((sp.dir + cmd.n!) % 360) as number,
                 })
-                setSprites([...state])
+                const turned = state[spriteIdx]
+                setSprites(prev => prev.map((sp, i) => i === spriteIdx ? turned : sp))
                 await delay(STEP_DELAY * 0.6)
             } else if (cmd.type === 'bilang') {
                 state = state.map((sp, i) => i !== spriteIdx ? sp : { ...sp, saying: cmd.text })
-                setSprites([...state])
+                const saying = state[spriteIdx]
+                setSprites(prev => prev.map((sp, i) => i === spriteIdx ? saying : sp))
                 await delay(1200)
                 state = state.map((sp, i) => i !== spriteIdx ? sp : { ...sp, saying: undefined })
-                setSprites([...state])
+                const unsaid = state[spriteIdx]
+                setSprites(prev => prev.map((sp, i) => i === spriteIdx ? unsaid : sp))
             } else if (cmd.type === 'ulangi' && cmd.body && cmd.n !== undefined) {
                 for (let i = 0; i < cmd.n; i++) {
                     state = await executeCommands(spriteIdx, cmd.body, state)
@@ -373,29 +378,23 @@ export default function RobotManualPage() {
         )
         const allCommands = allCodes.map(parseRobotCode)
 
-        // Run all 4 concurrently — each keeps its own "current" state
-        // We merge state updates via functional setState
+        // Run all 4 concurrently — each only touches its own sprite index
         try {
-            let sharedState = initSprites()
-
-            await Promise.all(
-                allCommands.map(async (cmds, i) => {
-                    // Each sprite runs independently, updating shared state
-                    const finalState = await executeCommands(i, cmds, sharedState)
-                    sharedState = finalState
-                })
+            const initState = initSprites()
+            const finalStates = await Promise.all(
+                allCommands.map((cmds, i) => executeCommands(i, cmds, initState))
             )
 
-            // Mark sprites that reached finish
-            setSprites(prev =>
-                prev.map(s => ({
-                    ...s,
-                    reached: s.col === FINISH_COL && s.row === FINISH_ROW,
-                }))
-            )
+            // Each execution only updated its own sprite — combine final positions
+            const mergedState = initState.map((_, i) => ({
+                ...finalStates[i][i],
+                reached: finalStates[i][i].col === FINISH_COL && finalStates[i][i].row === FINISH_ROW,
+            }))
+
+            setSprites(mergedState)
 
             // Check win condition
-            const reached = sharedState.filter(
+            const reached = mergedState.filter(
                 s => s.col === FINISH_COL && s.row === FINISH_ROW
             ).length
             if (reached === SPRITE_DEFS.length) {
