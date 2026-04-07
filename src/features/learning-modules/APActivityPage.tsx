@@ -111,22 +111,22 @@ export default function APActivityPage({ activityId }: APActivityPageProps) {
     const handleExecutionComplete = useCallback(() => {
         setIsRunning(false)
         setHasRun(true)
-        if (isWebView()) {
-            const score = ACTIVITY_XP_BAB7[activityId] ?? Math.max(10, 50 - blockCount)
-            sendToNative({ type: 'ACTIVITY_COMPLETE', data: { score, timeSpent: getElapsedTime() } })
-        }
-    }, [getElapsedTime, blockCount, activityId])
+    }, [])
 
     const handleSubmit = useCallback(async () => {
         if (submitted || isSubmitting) return
         setIsSubmitting(true)
         const score = ACTIVITY_XP_BAB7[activityId] ?? Math.max(10, 50 - blockCount)
-        const { data } = await supabase.auth.getSession()
-        const uid = data.session?.user?.id
-        if (uid) {
-            await logActivity(uid, activityId.toUpperCase(), getElapsedTime(), 1, score, true)
-            await upsertUserProgress(uid, 'chapter7', 'completed')
-            await upsertUserProgress(uid, 'posttest_chapter7', 'unlocked')
+        if (isWebView()) {
+            sendToNative({ type: 'ACTIVITY_COMPLETE', data: { score, timeSpent: getElapsedTime() } })
+        } else {
+            const { data } = await supabase.auth.getSession()
+            const uid = data.session?.user?.id
+            if (uid) {
+                await logActivity(uid, activityId.toUpperCase(), getElapsedTime(), 1, score, true)
+                await upsertUserProgress(uid, 'chapter7', 'completed')
+                await upsertUserProgress(uid, 'posttest_chapter7', 'unlocked')
+            }
         }
         setIsSubmitting(false)
         setSubmitted(true)
@@ -271,7 +271,7 @@ export default function APActivityPage({ activityId }: APActivityPageProps) {
                 )}
 
                 {/* Submit button — output tab, after running, web only */}
-                {activeTab === 'output' && hasRun && !isWebView() && (
+                {activeTab === 'output' && hasRun && (
                     <div className="px-4 pt-3 pb-1">
                         {submitted ? (
                             <div className="flex items-center justify-center gap-2 py-2.5 bg-green-50 border border-green-200 text-green-700 font-bold rounded-xl text-sm">

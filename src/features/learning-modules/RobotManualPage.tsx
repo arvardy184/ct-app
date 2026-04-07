@@ -386,9 +386,6 @@ export default function RobotManualPage() {
             ).length
             if (reached === SPRITE_DEFS.length) {
                 setAllReached(true)
-                if (isWebView()) {
-                    sendToNative({ type: 'ACTIVITY_COMPLETE', data: { score: ACTIVITY_XP_BAB7['ap-k7-08'], timeSpent: getElapsedTime() } })
-                }
             }
         } finally {
             setIsRunning(false)
@@ -398,10 +395,14 @@ export default function RobotManualPage() {
     async function handleSubmit() {
         if (submitted || isSubmitting) return
         setIsSubmitting(true)
-        const { data } = await supabase.auth.getSession()
-        const uid = data.session?.user?.id
-        if (uid) {
-            await logActivity(uid, 'AP-K7-08-U', getElapsedTime(), 1, ACTIVITY_XP_BAB7['ap-k7-08'], true)
+        if (isWebView()) {
+            sendToNative({ type: 'ACTIVITY_COMPLETE', data: { score: ACTIVITY_XP_BAB7['ap-k7-08'], timeSpent: getElapsedTime() } })
+        } else {
+            const { data } = await supabase.auth.getSession()
+            const uid = data.session?.user?.id
+            if (uid) {
+                await logActivity(uid, 'AP-K7-08-U', getElapsedTime(), 1, ACTIVITY_XP_BAB7['ap-k7-08'], true)
+            }
         }
         setIsSubmitting(false)
         setSubmitted(true)
@@ -567,7 +568,7 @@ export default function RobotManualPage() {
                 </div>
 
                 {/* Submit button — grid tab, after all reached, web only */}
-                {activeTab === 'grid' && allReached && !isWebView() && (
+                {activeTab === 'grid' && allReached && (
                     <div className="px-4 pt-3 pb-1">
                         {submitted ? (
                             <div className="flex items-center justify-center gap-2 py-2.5 bg-green-50 border border-green-200 text-green-700 font-bold rounded-xl text-sm">
