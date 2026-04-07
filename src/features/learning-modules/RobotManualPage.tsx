@@ -445,8 +445,8 @@ export default function RobotManualPage() {
                         <p className="text-slate-500 text-xs mt-1 leading-relaxed">Program ke-4 sprite agar mencapai titik <strong className="text-slate-700">Finish (H7)</strong>. Pilih sprite lalu susun blok.</p>
                     </div>
                 </div>
-            </div>
-=
+                </div>
+
             <div className="flex-shrink-0 flex gap-1.5 px-4 py-3 bg-slate-100 border-b border-slate-200 overflow-x-auto no-scrollbar shadow-inner">
                 {SPRITE_DEFS.map((def, i) => (
                     <button
@@ -567,7 +567,21 @@ export default function RobotManualPage() {
                     )}
                 </div>
 
-                {/* Submit button — grid tab, after all reached, web only */}
+       
+
+                <div className="flex gap-3 px-4 pt-2" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+                    <button
+                        onClick={() => setActiveTab('editor')}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-200
+                            ${activeTab === 'editor' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:text-slate-700 hover:bg-slate-200'}`}
+                    >📝 Editor</button>
+                    <button
+                        onClick={() => setActiveTab('grid')}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-200
+                            ${activeTab === 'grid' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:text-slate-700 hover:bg-slate-200'}`}
+                    >🗺️ Grid</button>
+                </div>
+                         {/* Submit button — grid tab, after all reached, web only */}
                 {activeTab === 'grid' && allReached && (
                     <div className="px-4 pt-3 pb-1">
                         {submitted ? (
@@ -588,19 +602,6 @@ export default function RobotManualPage() {
                         )}
                     </div>
                 )}
-
-                <div className="flex gap-3 px-4 pt-2 pb-4">
-                    <button
-                        onClick={() => setActiveTab('editor')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-200
-                            ${activeTab === 'editor' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:text-slate-700 hover:bg-slate-200'}`}
-                    >📝 Editor</button>
-                    <button
-                        onClick={() => setActiveTab('grid')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-200
-                            ${activeTab === 'grid' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:text-slate-700 hover:bg-slate-200'}`}
-                    >🗺️ Grid</button>
-                </div>
             </div>
         </div>
     )

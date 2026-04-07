@@ -270,9 +270,40 @@ export default function APActivityPage({ activityId }: APActivityPageProps) {
                     </div>
                 )}
 
-                {/* Submit button — output tab, after running, web only */}
+           
+
+                {/* Tab switcher */}
+                <div className="flex gap-3 px-4 pt-2" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+                    <button
+                        onClick={() => setActiveTab('editor')}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-200
+                            ${activeTab === 'editor' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:text-slate-700 hover:bg-slate-200'}`}
+                    >
+                        📝 Editor
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('output')}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-200
+                            ${activeTab === 'output' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:text-slate-700 hover:bg-slate-200'}`}
+                    >
+                        🎬 Output
+                    </button>
+
+                    
+                    {!showChallenge && (
+                        <button
+                            onClick={() => setShowChallenge(true)}
+                            className={`flex items-center justify-center px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 ${config.color} shadow-sm hover:opacity-80`}
+                            title="Lihat Tantangan"
+                        >
+                            🎯 Target
+                        </button>
+                    )}
+                </div>
+
+                {/* Submit button — output tab, after running */}
                 {activeTab === 'output' && hasRun && (
-                    <div className="px-4 pt-3 pb-1">
+                    <div className="px-4 pt-3 pb-4">
                         {submitted ? (
                             <div className="flex items-center justify-center gap-2 py-2.5 bg-green-50 border border-green-200 text-green-700 font-bold rounded-xl text-sm">
                                 ✅ Aktivitas berhasil dikumpulkan!
@@ -291,33 +322,6 @@ export default function APActivityPage({ activityId }: APActivityPageProps) {
                         )}
                     </div>
                 )}
-
-                {/* Tab switcher */}
-                <div className="flex gap-3 px-4 pt-2 pb-4">
-                    <button
-                        onClick={() => setActiveTab('editor')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-200
-                            ${activeTab === 'editor' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:text-slate-700 hover:bg-slate-200'}`}
-                    >
-                        📝 Editor
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('output')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-200
-                            ${activeTab === 'output' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:text-slate-700 hover:bg-slate-200'}`}
-                    >
-                        🎬 Output
-                    </button>
-                    {!showChallenge && (
-                        <button
-                            onClick={() => setShowChallenge(true)}
-                            className={`flex items-center justify-center px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 ${config.color} shadow-sm hover:opacity-80`}
-                            title="Lihat Tantangan"
-                        >
-                            🎯 Target
-                        </button>
-                    )}
-                </div>
             </div>
         </div>
     )
