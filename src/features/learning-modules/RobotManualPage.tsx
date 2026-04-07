@@ -249,6 +249,31 @@ export default function RobotManualPage() {
             }),
         })
 
+        // Override FieldNumber & FieldTextInput editor agar pakai modal kustom di WebView
+        // (mencegah dialog native Android "The page at ... says:")
+        if (isWebView()) {
+            const asyncPrompt = (window as any).__asyncPrompt
+            if (asyncPrompt && (Blockly.FieldNumber as any).prototype) {
+                ;(Blockly.FieldNumber as any).prototype.showEditor_ = function () {
+                    const self = this
+                    asyncPrompt('Masukkan angka:', String(self.getValue())).then((result: string | null) => {
+                        if (result !== null && result !== undefined) {
+                            const num = Number(result)
+                            if (!isNaN(num)) self.setValue(num)
+                        }
+                    })
+                }
+            }
+            if (asyncPrompt && (Blockly.FieldTextInput as any).prototype) {
+                ;(Blockly.FieldTextInput as any).prototype.showEditor_ = function () {
+                    const self = this
+                    asyncPrompt('Masukkan teks:', String(self.getValue())).then((result: string | null) => {
+                        if (result !== null && result !== undefined) self.setValue(result)
+                    })
+                }
+            }
+        }
+
         wsRef.current.addChangeListener(() => {
             if (!wsRef.current) return
             const code = javascriptGenerator.workspaceToCode(wsRef.current)
