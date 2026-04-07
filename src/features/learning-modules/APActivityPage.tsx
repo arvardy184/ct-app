@@ -106,11 +106,13 @@ export default function APActivityPage({ activityId }: APActivityPageProps) {
         }
     }, [commands])
 
-    const handleExecutionStart = useCallback(() => setIsRunning(true), [])
+    const handleExecutionStart = useCallback(() => {
+        setIsRunning(true)
+        setHasRun(true)
+    }, [])
 
     const handleExecutionComplete = useCallback(() => {
         setIsRunning(false)
-        setHasRun(true)
     }, [])
 
     const handleSubmit = useCallback(async () => {
