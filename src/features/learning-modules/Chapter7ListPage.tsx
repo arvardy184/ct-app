@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAppStore } from '../../stores/useAppStore'
 import { supabase, getCompletedActivities } from '../../lib/supabase'
@@ -46,19 +46,24 @@ export default function Chapter7ListPage() {
     const { isGamified, userSession, setGamificationMode } = useAppStore()
     const navigate = useNavigate()
     const [completed, setCompleted] = useState<Set<string>>(new Set())
+    const [refreshing, setRefreshing] = useState(false)
 
     useEffect(() => {
         if (!userSession) return
         setGamificationMode(userSession.groupType === 'B')
     }, [userSession?.groupType])
 
-    useEffect(() => {
-        supabase.auth.getSession().then(({ data }) => {
-            if (data.session?.user?.id) {
-                getCompletedActivities(data.session.user.id).then(setCompleted)
-            }
-        })
+    const fetchCompleted = useCallback(async () => {
+        setRefreshing(true)
+        const { data } = await supabase.auth.getSession()
+        if (data.session?.user?.id) {
+            const result = await getCompletedActivities(data.session.user.id)
+            setCompleted(result)
+        }
+        setRefreshing(false)
     }, [])
+
+    useEffect(() => { fetchCompleted() }, [fetchCompleted])
 
     return (
         <div className="space-y-6 animate-fade-in pb-8">
@@ -69,6 +74,14 @@ export default function Chapter7ListPage() {
                 </Link>
                 <h1 className="text-3xl font-black text-slate-800 flex items-center gap-3">
                     <span>🧩</span> Bab 7: Algoritma Pemrograman Visual
+                    <button
+                        onClick={fetchCompleted}
+                        disabled={refreshing}
+                        className="ml-auto text-slate-400 hover:text-slate-700 disabled:opacity-40 transition-colors"
+                        title="Refresh status"
+                    >
+                        <span className={refreshing ? 'inline-block animate-spin' : ''}>↻</span>
+                    </button>
                 </h1>
                 <p className="text-slate-500 mt-2 font-medium">
                     Pilih aktivitas untuk belajar membuat program visual seperti Scratch!

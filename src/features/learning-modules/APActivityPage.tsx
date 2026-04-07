@@ -130,7 +130,10 @@ export default function APActivityPage({ activityId }: APActivityPageProps) {
         }
         setIsSubmitting(false)
         setSubmitted(true)
-    }, [submitted, isSubmitting, activityId, blockCount, getElapsedTime])
+        if (!isWebView()) {
+            setTimeout(() => navigate('/chapter7'), 1500)
+        }
+    }, [submitted, isSubmitting, activityId, blockCount, getElapsedTime, navigate])
 
     const hasCode = commands.length > 0
 

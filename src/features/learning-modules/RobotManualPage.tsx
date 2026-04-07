@@ -406,6 +406,9 @@ export default function RobotManualPage() {
         }
         setIsSubmitting(false)
         setSubmitted(true)
+        if (!isWebView()) {
+            setTimeout(() => navigate('/chapter7'), 1500)
+        }
     }
 
     function handleReset() {
