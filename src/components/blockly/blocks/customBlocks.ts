@@ -1,9 +1,7 @@
 import * as Blockly from 'blockly'
 import { javascriptGenerator } from 'blockly/javascript'
 
-// ============================================
-// BLOCK DEFINITIONS (Bahasa Indonesia)
-// ============================================
+
 
 // 1. GERAK MAJU (Move Forward)
 Blockly.Blocks['gerak_maju'] = {
@@ -336,9 +334,7 @@ javascriptGenerator.forBlock['mainkan_suara'] = function () {
     return `playSound();\n`
 }
 
-// ============================================
-// TOOLBOX CONFIGURATION
-// ============================================
+
 
 export const toolboxConfig = {
     kind: 'categoryToolbox',
@@ -390,7 +386,5 @@ export const toolboxConfig = {
     ]
 }
 
-// Export function to ensure blocks are registered
-export function registerCustomBlocks() {
-    console.log('✅ Custom Blockly blocks registered (Indonesian)')
-}
+
+export function registerCustomBlocks() {}

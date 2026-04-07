@@ -7,10 +7,6 @@ interface UseTimeTrackerOptions {
     autoStart?: boolean
 }
 
-/**
- * Custom hook for tracking time spent on activities
- * Used for research data collection (Y1, Y2, Y3 metrics)
- */
 export function useTimeTracker({ activityName, autoStart = true }: UseTimeTrackerOptions) {
     const {
         userSession,
@@ -23,14 +19,13 @@ export function useTimeTracker({ activityName, autoStart = true }: UseTimeTracke
     const attemptCountRef = useRef(1)
     const hasStartedRef = useRef(false)
 
-    // Start tracking when component mounts
     useEffect(() => {
         if (autoStart && !hasStartedRef.current) {
             startActivity()
             hasStartedRef.current = true
         }
 
-        // Cleanup: stop and log when component unmounts
+
         return () => {
             if (hasStartedRef.current && activityStartTime) {
                 const elapsed = stopActivity()
@@ -65,12 +60,10 @@ export function useTimeTracker({ activityName, autoStart = true }: UseTimeTracke
         return elapsed
     }, [activityName, stopActivity, userSession])
 
-    // Increment attempt count (for retry logic)
     const incrementAttempt = useCallback(() => {
         attemptCountRef.current += 1
     }, [])
 
-    // Reset and restart
     const resetAndRestart = useCallback(() => {
         stopActivity()
         attemptCountRef.current = 1

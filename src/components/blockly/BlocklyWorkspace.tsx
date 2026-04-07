@@ -4,7 +4,7 @@ import { javascriptGenerator } from 'blockly/javascript'
 import { toolboxConfig, registerCustomBlocks } from './blocks/customBlocks'
 import type { ExecutionCommand } from '../../types'
 
-// Register custom blocks
+
 registerCustomBlocks()
 
 interface BlocklyWorkspaceProps {
@@ -12,7 +12,6 @@ interface BlocklyWorkspaceProps {
     onCommandsGenerated?: (commands: ExecutionCommand[]) => void
     onExecute?: () => void
     isRunning?: boolean
-    /** Sembunyikan tombol kontrol bawaan — parent yang tangani (untuk mode mobile/embedded) */
     hideControls?: boolean
 }
 
@@ -23,7 +22,6 @@ export interface BlocklyWorkspaceRef {
     getBlockCount: () => number
     hasCode: () => boolean
     resize: () => void
-    /** Toggle toolbox sidebar. Returns state baru (true = visible). */
     toggleToolbox: () => boolean
 }
 
@@ -40,11 +38,11 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceRef, BlocklyWorkspaceProps>(
     const [blockCount, setBlockCount] = useState(0)
     const [toolboxVisible, setToolboxVisible] = useState(true)
 
-    // Initialize Blockly workspace
+ 
     useEffect(() => {
         if (!blocklyDiv.current || workspaceRef.current) return
 
-        // Detect if running on a touch device / mobile
+        
         const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
         const isMobile = isTouchDevice || window.innerWidth < 768
 
@@ -53,22 +51,22 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceRef, BlocklyWorkspaceProps>(
             grid: {
                 spacing: 25,
                 length: 3,
-                colour: '#e2e8f0', // slate-200
+                colour: '#e2e8f0', 
                 snap: true
             },
             zoom: {
                 controls: true,
                 wheel: true,
-                pinch: true,       // Enable pinch-to-zoom on mobile
-                startScale: isMobile ? 1.0 : 0.9,     // Larger scale on mobile for easier tapping
+                pinch: true,    
+                startScale: isMobile ? 1.0 : 0.9,    
                 maxScale: 2,
                 minScale: 0.3,
                 scaleSpeed: 1.2
             },
             move: {
                 scrollbars: true,
-                drag: true,        // Allow workspace panning via touch drag
-                wheel: true,       // Allow workspace scroll via mouse wheel
+                drag: true,        
+                wheel: true,       
             },
             trashcan: true,
             sounds: false,
@@ -77,17 +75,17 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceRef, BlocklyWorkspaceProps>(
                 name: 'scratch_light',
                 base: Blockly.Themes.Classic,
                 componentStyles: {
-                    workspaceBackgroundColour: '#f8fafc', // slate-50
+                    workspaceBackgroundColour: '#f8fafc', 
                     toolboxBackgroundColour: '#ffffff',
-                    toolboxForegroundColour: '#334155', // slate-700
-                    flyoutBackgroundColour: '#f1f5f9', // slate-100
-                    flyoutForegroundColour: '#1e293b', // slate-800
+                    toolboxForegroundColour: '#334155', 
+                    flyoutBackgroundColour: '#f1f5f9', 
+                    flyoutForegroundColour: '#1e293b',
                     flyoutOpacity: 0.95,
-                    scrollbarColour: '#cbd5e1', // slate-300
+                    scrollbarColour: '#cbd5e1',
                     insertionMarkerColour: '#000',
                     insertionMarkerOpacity: 0.2,
                     scrollbarOpacity: 0.8,
-                    cursorColour: '#94a3b8', // slate-400
+                    cursorColour: '#94a3b8', 
                 },
                 fontStyle: {
                     family: 'Inter, sans-serif',
@@ -98,25 +96,22 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceRef, BlocklyWorkspaceProps>(
         })
         workspaceRef.current = workspace
 
-        // Override Blockly dialog — cek __asyncPrompt saat dipanggil (bukan saat init)
-        // supaya tidak ada masalah timing antara React render dan injeksi mobile WebView
+       
         Blockly.dialog.setPrompt((msg: string, defaultValue: string, callback: (val: string | null) => void) => {
             const asyncPrompt = (window as any).__asyncPrompt
             if (typeof asyncPrompt === 'function') {
-                // Embedded di mobile: gunakan styled HTML dialog dari injeksi mobile
+            
                 asyncPrompt(msg, defaultValue).then((result: string | null) => {
                     callback(result)
                 })
             } else {
-                // Standalone web: fallback ke native browser prompt
                 callback(window.prompt(msg, defaultValue))
             }
         })
 
-        // Force correct sizing after layout settles (flex/absolute containers can report 0 on first paint)
+
         const rafId = requestAnimationFrame(() => {
             if (workspaceRef.current) Blockly.svgResize(workspaceRef.current)
-            // Mobile touch fix: set after Blockly injects its SVG elements
             if (blocklyDiv.current) {
                 blocklyDiv.current.style.touchAction = 'none'
                 const svg = blocklyDiv.current.querySelector('.blocklySvg') as HTMLElement | null
@@ -124,19 +119,18 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceRef, BlocklyWorkspaceProps>(
             }
         })
 
-        // Keep Blockly sized when the container is resized (e.g. challenge banner toggle)
         const resizeObserver = new ResizeObserver(() => {
             if (workspaceRef.current) Blockly.svgResize(workspaceRef.current)
         })
         resizeObserver.observe(blocklyDiv.current)
 
-        // Also handle browser window resize
+      
         const handleWindowResize = () => {
             if (workspaceRef.current) Blockly.svgResize(workspaceRef.current)
         }
         window.addEventListener('resize', handleWindowResize)
 
-        // Listen for workspace changes
+       
         workspace.addChangeListener((event) => {
             if (event.type === Blockly.Events.BLOCK_MOVE ||
                 event.type === Blockly.Events.BLOCK_CHANGE ||
@@ -165,10 +159,9 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceRef, BlocklyWorkspaceProps>(
                 workspaceRef.current = null
             }
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
-    // Parse satu baris jadi command primitif (non-loop). Null = bukan command yg dikenal.
+
     const parseSingleLine = (line: string): ExecutionCommand | null => {
         const moveMatch = line.match(/moveForward\((\d+)\)/)
         if (moveMatch) return { type: 'move', value: parseInt(moveMatch[1]) }
@@ -191,7 +184,6 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceRef, BlocklyWorkspaceProps>(
         return null
     }
 
-    // Recursive parser — cursor adalah objek agar bisa di-mutate lintas rekursi
     const parseBlock = (lines: string[], cursor: { i: number }): ExecutionCommand[] => {
         const commands: ExecutionCommand[] = []
         while (cursor.i < lines.length) {
@@ -204,11 +196,11 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceRef, BlocklyWorkspaceProps>(
             // Akhir blok — kembalikan ke caller
             if (line === '//REPEAT_END' || line === '//FOREVER_END' || line === '//IF_END') return commands
 
-            // Repeat N kali
+      
             const repeatMatch = line.match(/^\/\/REPEAT_START:(\d+)$/)
             if (repeatMatch) {
                 const times = parseInt(repeatMatch[1])
-                const body = parseBlock(lines, cursor) // rekursi, konsumsi sampai REPEAT_END
+                const body = parseBlock(lines, cursor)
                 commands.push({ type: 'repeat', times, body })
                 continue
             }

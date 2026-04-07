@@ -24,8 +24,6 @@ export default function DashboardPage() {
         })
     }, [])
 
-    // Group A/B gamification: on dashboard, always show gamified stats
-    // The actual per-chapter gamification toggle happens on Chapter pages
     useEffect(() => {
         if (!userSession) return
         setGamificationMode(true)
@@ -219,7 +217,7 @@ export default function DashboardPage() {
                 )
             })}
 
-            {/* Achievements (Gamified only) */}
+        
             {isGamified && (
                 <section>
                     <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-3">
@@ -272,7 +270,6 @@ export default function DashboardPage() {
     )
 }
 
-// ─── Helper Components ────────────────────────────────────────────────────
 
 function StepCard({
     label,

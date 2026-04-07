@@ -445,7 +445,7 @@ export default function AdminDashboardPage() {
         </div>
       </Section>
 
-      {/* Activity Log Table */}
+     
       <Section
         title="Log Aktivitas Detail"
         icon="📋"
@@ -532,7 +532,6 @@ export default function AdminDashboardPage() {
   )
 }
 
-// ─── Sub-components ──────────────────────────────
 
 function SummaryCard({
   icon,

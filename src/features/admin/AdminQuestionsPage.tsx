@@ -21,8 +21,6 @@ export default function AdminQuestionsPage() {
   const [loading, setLoading] = useState(true)
   const [filterType, setFilterType] = useState<FilterType>('all')
   const [filterChapter, setFilterChapter] = useState<FilterChapter>('all')
-
-  // Form state: null = form tertutup, 'new' = tambah baru, string id = edit
   const [editingId, setEditingId] = useState<string | 'new' | null>(null)
   const [formData, setFormData] = useState<QuestionInput>(emptyQuestionInput())
   const [saving, setSaving] = useState(false)
@@ -47,7 +45,6 @@ export default function AdminQuestionsPage() {
     return true
   })
 
-  // Kelompokkan berdasarkan chapter + type untuk tampilan yang rapi
   const grouped = filtered.reduce<Record<string, Question[]>>((acc, q) => {
     const key = `${q.chapter}__${q.type}`
     if (!acc[key]) acc[key] = []
@@ -263,8 +260,6 @@ export default function AdminQuestionsPage() {
   )
 }
 
-// ─── QuestionForm ─────────────────────────────────────────────────────────────
-
 interface QuestionFormProps {
   data: QuestionInput
   isNew: boolean
@@ -417,7 +412,6 @@ function QuestionForm({ data, isNew, saving, error, onChange, onSave, onCancel }
   )
 }
 
-// ─── QuestionCard ─────────────────────────────────────────────────────────────
 
 interface QuestionCardProps {
   question: Question

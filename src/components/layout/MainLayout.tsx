@@ -7,9 +7,7 @@ export default function MainLayout() {
     const { isGamified, userSession, setGamificationMode } = useAppStore()
     const location = useLocation()
 
-    // Group A/B gamification logic based on current route
-    // Group A: Chapter 2 = gamified, Chapter 7 = non-gamified
-    // Group B: Chapter 2 = non-gamified, Chapter 7 = gamified
+    
     useEffect(() => {
         if (!userSession) return
         const path = location.pathname
@@ -31,10 +29,8 @@ export default function MainLayout() {
 
     return (
         <div className="min-h-screen bg-slate-50">
-            {/* Conditional Gamification Header */}
             {isGamified && userSession && <GamificationHeader />}
 
-            {/* Non-Gamified Simple Header */}
             {!isGamified && (
                 <header className="bg-white border-b border-slate-200 px-6 py-4">
                     <div className="container mx-auto flex items-center justify-between">
@@ -56,7 +52,7 @@ export default function MainLayout() {
                 </header>
             )}
 
-            {/* Navigation */}
+  
             <nav className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-10">
                 <div className="container mx-auto px-6">
                     <div className="flex items-center justify-between">
@@ -88,16 +84,15 @@ export default function MainLayout() {
                 </div>
             </nav>
 
-            {/* Main Content */}
             <main className="container mx-auto px-6 py-8">
                 <Outlet />
             </main>
 
-            {/* Footer */}
+
             <footer className="bg-white border-t border-slate-200 py-6 mt-auto">
                 <div className="container mx-auto px-6 text-center">
                     <p className="text-slate-500 text-sm">
-                        © 2026 Computational Thinking App - Thesis Research Project
+                        © 2026 Computational Thinking App - Thesis Research Project by Dani Adrian
                     </p>
                 </div>
             </footer>

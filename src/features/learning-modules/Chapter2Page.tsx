@@ -5,7 +5,7 @@ import { useTimeTracker } from '../../hooks/useTimeTracker'
 import { supabase, upsertUserProgress } from '../../lib/supabase'
 import { useAppStore } from '../../stores/useAppStore'
 
-// Timer display component
+
 function TimerDisplay({ getElapsedTime }: { getElapsedTime: () => number }) {
     const [time, setTime] = useState(0)
 
@@ -31,7 +31,6 @@ function TimerDisplay({ getElapsedTime }: { getElapsedTime: () => number }) {
 export default function Chapter2Page() {
     const { userSession, setGamificationMode, isGamified } = useAppStore()
 
-    // Group A: Chapter 2 gamified | Group B: Chapter 2 non-gamified
     useEffect(() => {
         if (!userSession) return
         setGamificationMode(userSession.groupType === 'A')
@@ -44,7 +43,6 @@ export default function Chapter2Page() {
 
     const handleComplete = async (score: number) => {
         const timeSpent = await finishActivity(score, true)
-        console.log(`Chapter 2 completed! Score: ${score}, Time: ${timeSpent}s`)
 
         const { data } = await supabase.auth.getSession()
         const uid = data.session?.user?.id

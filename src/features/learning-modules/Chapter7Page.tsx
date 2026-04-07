@@ -12,8 +12,7 @@ interface Chapter7PageProps {
     isEmbedded?: boolean
 }
 
-// This page is used only in embedded (WebView) mode via /embed/chapter7.
-// Web dashboard uses Chapter7ListPage instead.
+
 export default function Chapter7Page({ isEmbedded = false }: Chapter7PageProps) {
     const stageRef = useRef<VisualStageRef>(null)
     const blocklyRef = useRef<BlocklyWorkspaceRef>(null)
@@ -31,9 +30,7 @@ export default function Chapter7Page({ isEmbedded = false }: Chapter7PageProps) 
 
     useEffect(() => {
         if (isEmbedded && isWebView()) {
-            setAuthTokenFromNative().then((tokenSet) => {
-                console.log('🔌 Running in WebView')
-                console.log('🔐 Auth token:', tokenSet ? 'Set ✅' : 'Missing ❌')
+            setAuthTokenFromNative().then(() => {
                 const gamified = (window as any).__IS_GAMIFIED__
                 if (typeof gamified === 'boolean') {
                     useAppStore.setState({ isGamified: gamified })
@@ -72,11 +69,9 @@ export default function Chapter7Page({ isEmbedded = false }: Chapter7PageProps) 
     return (
         <div className="h-screen w-screen bg-slate-50 flex flex-col overflow-hidden select-none">
 
-            {/* ── Tab Content ────────────────────────────────────────── */}
+         
             <div className="flex-1 min-h-0 relative">
 
-                {/* Editor Tab — pakai visibility:hidden bukan display:none supaya
-                    Blockly tetap tau dimensi container-nya (Android WebView issue) */}
                 <div
                     className="absolute inset-0 flex"
                     style={{
@@ -94,7 +89,7 @@ export default function Chapter7Page({ isEmbedded = false }: Chapter7PageProps) 
                     />
                 </div>
 
-                {/* Output Tab */}
+     
                 <div
                     className="absolute inset-0 overflow-y-auto overflow-x-hidden bg-slate-50 flex flex-col"
                     style={{
@@ -129,7 +124,6 @@ export default function Chapter7Page({ isEmbedded = false }: Chapter7PageProps) 
                 </div>
             </div>
 
-            {/* ── Fixed Bottom Bar ────────────────────────────────── */}
             <div className="flex-shrink-0 bg-white border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] safe-area-inset-bottom">
 
                 {activeTab === 'editor' && (

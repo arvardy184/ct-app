@@ -3,7 +3,7 @@ import { Stage, Layer, Rect, Group, Text, Line, Circle } from 'react-konva'
 import type { ExecutionCommand } from '../../types'
 import { useAppStore } from '../../stores/useAppStore'
 
-// Play cat meow sound via Web Audio API (no file needed)
+
 function playCatSound() {
     try {
         const ctx = new AudioContext()
@@ -19,16 +19,16 @@ function playCatSound() {
         gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4)
         osc.start(ctx.currentTime)
         osc.stop(ctx.currentTime + 0.4)
-    } catch { /* audio not available */ }
+    } catch {
+        console.log("Audio API tidak didukung, suara tidak dapat diputar.")
+    }
 }
 
-// Cat sprite as a simple shape group
-// costume 0 = normal, costume 1 = singing (open mouth + squinting eyes)
 const CatSprite = ({ x, y, rotation, costume = 0 }: { x: number; y: number; rotation: number; costume?: number }) => {
     const mouthOpen = costume === 1
     return (
         <Group x={x} y={y} rotation={rotation} offsetX={20} offsetY={20}>
-            {/* Body */}
+            
             <Rect
                 x={0}
                 y={10}
@@ -40,14 +40,14 @@ const CatSprite = ({ x, y, rotation, costume = 0 }: { x: number; y: number; rota
                 shadowBlur={5}
                 shadowOpacity={0.3}
             />
-            {/* Head */}
+        
             <Circle
                 x={20}
                 y={8}
                 radius={15}
                 fill="#FF9500"
             />
-            {/* Ears */}
+
             <Line
                 points={[8, 0, 12, -12, 18, 2]}
                 fill="#FF9500"
@@ -58,7 +58,7 @@ const CatSprite = ({ x, y, rotation, costume = 0 }: { x: number; y: number; rota
                 fill="#FF9500"
                 closed
             />
-            {/* Eyes — squint when singing */}
+           
             {mouthOpen ? (
                 <>
                     <Line points={[10, 4, 18, 7]} stroke="black" strokeWidth={2} lineCap="round" />
@@ -72,13 +72,13 @@ const CatSprite = ({ x, y, rotation, costume = 0 }: { x: number; y: number; rota
                     <Circle x={26} y={5} radius={2} fill="black" />
                 </>
             )}
-            {/* Nose */}
+          
             <Circle x={20} y={12} radius={2} fill="#FF6B6B" />
-            {/* Mouth — open when singing */}
+    
             {mouthOpen && (
                 <Line points={[15, 15, 20, 20, 25, 15]} stroke="#FF6B6B" strokeWidth={2} lineCap="round" lineJoin="round" />
             )}
-            {/* Direction indicator (arrow) */}
+         
             <Line
                 points={[40, 25, 55, 25, 50, 20, 55, 25, 50, 30]}
                 stroke="#4CAF50"
@@ -90,12 +90,11 @@ const CatSprite = ({ x, y, rotation, costume = 0 }: { x: number; y: number; rota
     )
 }
 
-// Grid background
+
 const GridBackground = ({ width, height }: { width: number; height: number }) => {
     const gridLines = []
     const gridSize = 40
 
-    // Vertical lines
     for (let x = 0; x <= width; x += gridSize) {
         gridLines.push(
             <Line
@@ -107,7 +106,7 @@ const GridBackground = ({ width, height }: { width: number; height: number }) =>
         )
     }
 
-    // Horizontal lines
+ 
     for (let y = 0; y <= height; y += gridSize) {
         gridLines.push(
             <Line
@@ -119,7 +118,7 @@ const GridBackground = ({ width, height }: { width: number; height: number }) =>
         )
     }
 
-    // Center crosshair
+
     gridLines.push(
         <Line
             key="center-h"
@@ -164,16 +163,15 @@ const VisualStage = forwardRef<VisualStageRef, VisualStageProps>(({
     const animationRef = useRef<number | null>(null)
     const [costume, setCostume] = useState(0)
     const costumeRef = useRef(0)
-    // Flag untuk menghentikan forever loop saat reset diklik
     const isRunningRef = useRef(false)
 
-    // Initialize sprite position
+    
     useEffect(() => {
         setSpritePosition(width / 2, height / 2)
         setSpriteRotation(0)
     }, [width, height, setSpritePosition, setSpriteRotation])
 
-    // Animation helper — resolve early jika isRunningRef menjadi false (user klik Reset)
+
     const animateValue = useCallback((
         start: number,
         end: number,
@@ -184,7 +182,6 @@ const VisualStage = forwardRef<VisualStageRef, VisualStageProps>(({
             const startTime = performance.now()
 
             const animate = (currentTime: number) => {
-                // Stop animation jika reset dipanggil
                 if (!isRunningRef.current) {
                     resolve()
                     return
@@ -193,7 +190,6 @@ const VisualStage = forwardRef<VisualStageRef, VisualStageProps>(({
                 const elapsed = currentTime - startTime
                 const progress = Math.min(elapsed / duration, 1)
 
-                // Easing function (ease-out)
                 const eased = 1 - Math.pow(1 - progress, 3)
                 const currentValue = start + (end - start) * eased
 
@@ -210,20 +206,17 @@ const VisualStage = forwardRef<VisualStageRef, VisualStageProps>(({
         })
     }, [])
 
-    // Execute a single command
+    
     const executeCommand = useCallback(async (command: ExecutionCommand): Promise<void> => {
         const currentSprite = useAppStore.getState().sprite
-        const ANIMATION_DURATION = 500 // ms — cukup lambat agar arah gerakan terlihat jelas
+        const ANIMATION_DURATION = 500
 
         switch (command.type) {
             case 'move': {
-                // rotation=0 → sprite menghadap kanan (sesuai arah arrow visual)
-                // cos(0)=1, sin(0)=0 → gerak ke kanan ✓
                 const radians = currentSprite.rotation * (Math.PI / 180)
                 const targetX = currentSprite.x + Math.cos(radians) * command.value * 3
                 const targetY = currentSprite.y + Math.sin(radians) * command.value * 3
 
-                // Clamp to stage bounds
                 const clampedX = Math.max(20, Math.min(width - 20, targetX))
                 const clampedY = Math.max(20, Math.min(height - 20, targetY))
 
@@ -350,11 +343,8 @@ const VisualStage = forwardRef<VisualStageRef, VisualStageProps>(({
 
                 if (atLeft || atRight || atTop || atBottom) {
                     let r = s.rotation
-                    // Flip komponen horizontal jika kena kiri/kanan
                     if (atLeft || atRight) r = 180 - r
-                    // Flip komponen vertikal jika kena atas/bawah
                     if (atTop || atBottom) r = -r
-                    // Normalkan ke 0-360
                     r = ((r % 360) + 360) % 360
                     setSpriteRotation(r)
                     setConsoleOutput(prev => [...prev, `↩️ Pantul dari tepi`])
@@ -363,7 +353,6 @@ const VisualStage = forwardRef<VisualStageRef, VisualStageProps>(({
             }
 
             case 'startSound': {
-                // Non-blocking: mainkan suara tapi langsung lanjut ke blok berikutnya
                 playCatSound()
                 setConsoleOutput(prev => [...prev, `🔊 Mulai suara... (lanjut)`])
                 break
@@ -397,7 +386,6 @@ const VisualStage = forwardRef<VisualStageRef, VisualStageProps>(({
         }
     }, [width, height, animateValue, setSpritePosition, setSpriteRotation])
 
-    // Execute all commands
     const executeCommands = useCallback(async (commands: ExecutionCommand[]) => {
         if (commands.length === 0) return
 
@@ -415,7 +403,6 @@ const VisualStage = forwardRef<VisualStageRef, VisualStageProps>(({
 
             setConsoleOutput(prev => [...prev, '✅ Program selesai!'])
 
-            // Award XP in gamified mode
             if (isGamified) {
                 const xpEarned = Math.min(commands.length * 5, 50)
                 addXP(xpEarned)
@@ -430,8 +417,6 @@ const VisualStage = forwardRef<VisualStageRef, VisualStageProps>(({
         }
     }, [executeCommand, isGamified, addXP, setAnimating, onExecutionStart, onExecutionComplete])
 
-    // Reset stage — set isRunningRef=false untuk menghentikan forever/repeat loops.
-    // animateValue akan resolve sendiri di frame berikutnya saat isRunningRef=false.
     const reset = useCallback(() => {
         isRunningRef.current = false
         setSpritePosition(width / 2, height / 2)
@@ -443,13 +428,12 @@ const VisualStage = forwardRef<VisualStageRef, VisualStageProps>(({
         setAnimating(false)
     }, [width, height, setSpritePosition, setSpriteRotation, setAnimating])
 
-    // Expose methods via ref
     useImperativeHandle(ref, () => ({
         executeCommands,
         reset
     }), [executeCommands, reset])
 
-    // Cleanup on unmount
+    
     useEffect(() => {
         return () => {
             if (animationRef.current) {
@@ -460,7 +444,7 @@ const VisualStage = forwardRef<VisualStageRef, VisualStageProps>(({
 
     return (
         <div className="flex flex-col gap-4">
-            {/* Stage Header */}
+           
             <div className="flex items-center justify-between">
                 <h3 className="text-slate-800 font-bold flex items-center gap-2 text-lg">
                     <span>🎬</span> Visual Stage
@@ -475,20 +459,18 @@ const VisualStage = forwardRef<VisualStageRef, VisualStageProps>(({
                 </button>
             </div>
 
-            {/* Canvas Stage */}
+ 
             <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 relative">
                 <Stage width={width} height={height}>
                     <Layer>
-                        {/* Background */}
                         <Rect x={0} y={0} width={width} height={height} fill="#ffffff" />
 
-                        {/* Grid */}
                         <GridBackground width={width} height={height} />
 
-                        {/* Cat Sprite */}
+                   
                         <CatSprite x={sprite.x} y={sprite.y} rotation={sprite.rotation} costume={costume} />
 
-                        {/* Position indicator */}
+                       
                         <Text
                             x={10}
                             y={height - 25}
@@ -502,7 +484,7 @@ const VisualStage = forwardRef<VisualStageRef, VisualStageProps>(({
                 </Stage>
             </div>
 
-            {/* Console Output */}
+   
             <div className="bg-white border border-slate-200 shadow-sm rounded-xl p-4">
                 <h3 className="text-slate-800 font-bold mb-3 flex items-center gap-2">
                     <span>💻</span> Output Konsol

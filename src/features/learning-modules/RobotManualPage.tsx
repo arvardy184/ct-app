@@ -13,14 +13,12 @@ import { setAuthTokenFromNative, logActivity, supabase } from '../../lib/supabas
 
 registerRobotBlocks()
 
-// ── Grid constants ────────────────────────────────────────────────────────────
 const COLS = 10
 const ROWS = 10
-const FINISH_COL = 7  // H
-const FINISH_ROW = 6  // row 7, 0-indexed from bottom
+const FINISH_COL = 7  
+const FINISH_ROW = 6 
 
-// ── Sprite definitions ────────────────────────────────────────────────────────
-// direction: 0=UP, 90=RIGHT, 180=DOWN, 270=LEFT  (clockwise)
+
 const SPRITE_DEFS = [
     { name: 'Si Merah', color: '#ef4444', startCol: 0, startRow: 8, startDir: 90 }, // A9  →
     { name: 'Si Pink', color: '#ec4899', startCol: 1, startRow: 0, startDir: 0 }, // B1  ↑
@@ -30,8 +28,8 @@ const SPRITE_DEFS = [
 
 interface SpriteState {
     col: number
-    row: number   // 0=row1 (bottom), 9=row10 (top)
-    dir: number   // 0|90|180|270
+    row: number  
+    dir: number
     saying?: string
     reached: boolean
 }
@@ -42,7 +40,6 @@ function initSprites(): SpriteState[] {
     }))
 }
 
-// ── Grid Stage ────────────────────────────────────────────────────────────────
 function RobotGridStage({
     sprites,
     cellSize,
@@ -55,12 +52,11 @@ function RobotGridStage({
     const W = labelSize + COLS * cellSize + labelSize
     const H = labelSize + ROWS * cellSize + labelSize
 
-    // Convert game coords to screen coords
+
     const toScreenX = (col: number) => labelSize + col * cellSize + cellSize / 2
     const toScreenY = (row: number) => labelSize + (ROWS - 1 - row) * cellSize + cellSize / 2
 
-    // Direction arrow offsets (points to)
-    const dirArrow = (dir: number): [number, number] => {
+       const dirArrow = (dir: number): [number, number] => {
         if (dir === 0) return [0, -cellSize * 0.4]
         if (dir === 90) return [cellSize * 0.4, 0]
         if (dir === 180) return [0, cellSize * 0.4]
@@ -70,10 +66,10 @@ function RobotGridStage({
     return (
         <Stage width={W} height={H}>
             <Layer>
-                {/* Background */}
+    
                 <Rect x={0} y={0} width={W} height={H} fill="#ffffff" />
 
-                {/* Grid cells */}
+               
                 {Array.from({ length: ROWS }, (_, r) =>
                     Array.from({ length: COLS }, (_, c) => {
                         const isFinish = c === FINISH_COL && r === FINISH_ROW
@@ -101,7 +97,7 @@ function RobotGridStage({
                     })
                 )}
 
-                {/* Column labels (A-J) at bottom */}
+         
                 {Array.from({ length: COLS }, (_, c) => (
                     <Text
                         key={`col-${c}`}
@@ -115,7 +111,7 @@ function RobotGridStage({
                     />
                 ))}
 
-                {/* Row labels (1-10) at left */}
+             
                 {Array.from({ length: ROWS }, (_, r) => (
                     <Text
                         key={`row-${r}`}
@@ -129,7 +125,6 @@ function RobotGridStage({
                     />
                 ))}
 
-                {/* Sprites */}
                 {sprites.map((s, i) => {
                     const sx = toScreenX(s.col)
                     const sy = toScreenY(s.row)
@@ -137,7 +132,7 @@ function RobotGridStage({
                     const r = cellSize * 0.36
                     return (
                         <Group key={i}>
-                            {/* Circle body */}
+                         
                             <Circle
                                 x={sx} y={sy} radius={r}
                                 fill={SPRITE_DEFS[i].color}
@@ -147,7 +142,7 @@ function RobotGridStage({
                                 shadowBlur={4}
                                 shadowOffset={{ x: 0, y: 2 }}
                             />
-                            {/* Direction arrow */}
+         
                             <Arrow
                                 points={[sx, sy, sx + ax, sy + ay]}
                                 pointerLength={cellSize * 0.15}
@@ -155,7 +150,7 @@ function RobotGridStage({
                                 fill="white" stroke="white"
                                 strokeWidth={2}
                             />
-                            {/* Speech bubble */}
+                           
                             {s.saying && (
                                 <Group>
                                     <Rect
@@ -180,30 +175,29 @@ function RobotGridStage({
     )
 }
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
+
 export default function RobotManualPage() {
-    const STEP_DELAY = 280 // ms per grid step
+    const STEP_DELAY = 280 
 
     const [activeSprite, setActiveSprite] = useState(0)
     const activeSpriteRef = useRef(0)
     const [sprites, setSprites] = useState<SpriteState[]>(initSprites)
     const [spriteCodes, setSpriteCodes] = useState<string[]>(['', '', '', ''])
-    // Per-sprite workspace XML strings (to swap when switching sprite tabs)
     const spriteXmlRef = useRef<string[]>(['', '', '', ''])
     const workspaceCodeRef = useRef<string>('')
     const wsRef = useRef<Blockly.WorkspaceSvg | null>(null)
     const wsContainerRef = useRef<HTMLDivElement>(null)
-
     const [isRunning, setIsRunning] = useState(false)
     const [activeTab, setActiveTab] = useState<'editor' | 'grid'>('editor')
     const [allReached, setAllReached] = useState(false)
+    const [submitted, setSubmitted] = useState(false)
+    const [isSubmitting, setIsSubmitting] = useState(false)
     const [toolboxVisible, setToolboxVisible] = useState(true)
-
     const navigate = useNavigate()
     const { isGamified } = useAppStore()
     const { getElapsedTime } = useTimeTracker({ activityName: 'ap-k7-08', autoStart: true })
 
-    // Auth injection
+    
     useEffect(() => {
         if (isWebView()) {
             setAuthTokenFromNative().then(() => {
@@ -214,7 +208,7 @@ export default function RobotManualPage() {
     }, [])
 
 
-    // Inject Blockly into the container once
+  
     useEffect(() => {
         if (!wsContainerRef.current || wsRef.current) return
 
@@ -267,9 +261,7 @@ export default function RobotManualPage() {
         })
 
         return () => { wsRef.current?.dispose(); wsRef.current = null }
-    }, []) // only on mount
-
-    // Restore toolbox visibility when switching back to editor tab
+    }, []) 
     useEffect(() => {
         if (activeTab === 'editor' && wsRef.current) {
             const toolbox = wsRef.current.getToolbox() as any
@@ -278,17 +270,16 @@ export default function RobotManualPage() {
                 if (wsRef.current) Blockly.svgResize(wsRef.current)
             })
         }
-    }, [activeTab]) // eslint-disable-line react-hooks/exhaustive-deps
+    }, [activeTab]) 
 
-    // Save/load workspace XML when switching sprite tabs
+  
     function switchSpriteTab(newIndex: number) {
         if (!wsRef.current || newIndex === activeSprite) return
 
-        // Save current
+      
         const xml = Blockly.Xml.workspaceToDom(wsRef.current)
         spriteXmlRef.current[activeSprite] = Blockly.utils.xml.domToText(xml)
 
-        // Load new
         wsRef.current.clear()
         const savedXml = spriteXmlRef.current[newIndex]
         if (savedXml) {
@@ -299,7 +290,6 @@ export default function RobotManualPage() {
         setActiveSprite(newIndex)
     }
 
-    // ── Execution engine ──────────────────────────────────────────────────────
     const delay = (ms: number) => new Promise<void>(r => setTimeout(r, ms))
 
     async function executeCommands(
@@ -321,7 +311,7 @@ export default function RobotManualPage() {
                         col: Math.max(0, Math.min(COLS - 1, sp.col + dCol)),
                         row: Math.max(0, Math.min(ROWS - 1, sp.row + dRow)),
                     })
-                    // Only update this sprite's position — don't overwrite other sprites
+                  
                     const moved = state[spriteIdx]
                     setSprites(prev => prev.map((sp, i) => i === spriteIdx ? moved : sp))
                     await delay(STEP_DELAY)
@@ -358,8 +348,6 @@ export default function RobotManualPage() {
 
     async function handleRun() {
         if (isRunning) return
-
-        // Save current sprite workspace
         if (wsRef.current) {
             const xml = Blockly.Xml.workspaceToDom(wsRef.current)
             spriteXmlRef.current[activeSprite] = Blockly.Xml.domToText(xml)
@@ -369,25 +357,22 @@ export default function RobotManualPage() {
         setAllReached(false)
         setActiveTab('grid')
 
-        // Reset sprites
+
         const resetState = initSprites()
         setSprites(resetState)
         await delay(200)
 
-        // Parse all 4 sprite codes
         const allCodes = spriteCodes.map((c, i) =>
             i === activeSprite ? workspaceCodeRef.current : c
         )
         const allCommands = allCodes.map(parseRobotCode)
 
-        // Run all 4 concurrently — each only touches its own sprite index
         try {
             const initState = initSprites()
             const finalStates = await Promise.all(
                 allCommands.map((cmds, i) => executeCommands(i, cmds, initState))
             )
 
-            // Each execution only updated its own sprite — combine final positions
             const mergedState = initState.map((_, i) => ({
                 ...finalStates[i][i],
                 reached: finalStates[i][i].col === FINISH_COL && finalStates[i][i].row === FINISH_ROW,
@@ -395,7 +380,7 @@ export default function RobotManualPage() {
 
             setSprites(mergedState)
 
-            // Check win condition
+            
             const reached = mergedState.filter(
                 s => s.col === FINISH_COL && s.row === FINISH_ROW
             ).length
@@ -403,18 +388,23 @@ export default function RobotManualPage() {
                 setAllReached(true)
                 if (isWebView()) {
                     sendToNative({ type: 'ACTIVITY_COMPLETE', data: { score: ACTIVITY_XP_BAB7['ap-k7-08'], timeSpent: getElapsedTime() } })
-                } else {
-                    // Browser mode: log directly to Supabase
-                    supabase.auth.getSession().then(({ data }) => {
-                        if (data.session?.user?.id) {
-                            logActivity(data.session.user.id, 'AP-K7-08-U', getElapsedTime(), 1, ACTIVITY_XP_BAB7['ap-k7-08'], true)
-                        }
-                    })
                 }
             }
         } finally {
             setIsRunning(false)
         }
+    }
+
+    async function handleSubmit() {
+        if (submitted || isSubmitting) return
+        setIsSubmitting(true)
+        const { data } = await supabase.auth.getSession()
+        const uid = data.session?.user?.id
+        if (uid) {
+            await logActivity(uid, 'AP-K7-08-U', getElapsedTime(), 1, ACTIVITY_XP_BAB7['ap-k7-08'], true)
+        }
+        setIsSubmitting(false)
+        setSubmitted(true)
     }
 
     function handleReset() {
@@ -434,7 +424,6 @@ export default function RobotManualPage() {
         setToolboxVisible(next)
     }
 
-    // ── Responsive cell size ──────────────────────────────────────────────────
     const LABEL = 20
     const availableWidth = window.innerWidth - 32
     const cellSize = Math.floor((availableWidth - LABEL * 2) / COLS)
@@ -442,7 +431,6 @@ export default function RobotManualPage() {
     return (
         <div className="h-screen w-screen bg-slate-50 flex flex-col overflow-hidden select-none">
 
-            {/* ── Challenge banner ─────────────────────────────────── */}
             <div className="flex-shrink-0 bg-white border-b border-slate-200 p-4 shadow-sm z-10 transition-all">
                 <div className="flex items-start gap-4">
                     {!isWebView() && (
@@ -457,8 +445,7 @@ export default function RobotManualPage() {
                     </div>
                 </div>
             </div>
-
-            {/* ── Sprite selector ──────────────────────────────────── */}
+=
             <div className="flex-shrink-0 flex gap-1.5 px-4 py-3 bg-slate-100 border-b border-slate-200 overflow-x-auto no-scrollbar shadow-inner">
                 {SPRITE_DEFS.map((def, i) => (
                     <button
@@ -480,11 +467,8 @@ export default function RobotManualPage() {
                     </button>
                 ))}
             </div>
-
-            {/* ── Tab Content ──────────────────────────────────────── */}
             <div className="flex-1 min-h-0 relative">
-                {/* Editor tab — visibility:hidden bukan display:none supaya
-                    Blockly tetap tau dimensi container-nya (Android WebView issue) */}
+           
                 <div
                     className="absolute inset-0 flex"
                     style={{
@@ -496,7 +480,6 @@ export default function RobotManualPage() {
                     <div ref={wsContainerRef} className="w-full h-full" style={{ touchAction: 'none' }} />
                 </div>
 
-                {/* Grid tab */}
                 <div
                     className="absolute inset-0 overflow-y-auto bg-slate-50 flex flex-col"
                     style={{
@@ -506,7 +489,7 @@ export default function RobotManualPage() {
                     }}
                 >
                     <div className="flex flex-col items-center gap-4 p-4 pb-8">
-                        {/* Win banner */}
+                     
                         {allReached && (
                             <div className="w-full py-4 bg-yellow-50 border border-yellow-200 rounded-2xl text-center shadow-sm">
                                 <p className="text-yellow-800 font-black text-lg">🎉 Semua Sprite Mencapai Finish!</p>
@@ -514,7 +497,7 @@ export default function RobotManualPage() {
                             </div>
                         )}
 
-                        {/* Legend */}
+                 
                         <div className="w-full flex flex-wrap gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-sm justify-center">
                             {SPRITE_DEFS.map((def, i) => (
                                 <div key={i} className="flex items-center gap-1.5">
@@ -529,12 +512,10 @@ export default function RobotManualPage() {
                             </div>
                         </div>
 
-                        {/* Grid */}
                         <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-md bg-white p-1">
                             <RobotGridStage sprites={sprites} cellSize={cellSize} labelSize={LABEL} />
                         </div>
 
-                        {/* Reset */}
                         <button
                             onClick={handleReset}
                             disabled={isRunning}
@@ -547,9 +528,8 @@ export default function RobotManualPage() {
                 </div>
             </div>
 
-            {/* ── Bottom bar ───────────────────────────────────────── */}
             <div className="flex-shrink-0 bg-white border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
-                {/* Action row */}
+  
                 <div className="flex items-center gap-2 px-4 pt-3 pb-1 w-full overflow-x-auto no-scrollbar">
                     <button
                         onClick={handleRun}
@@ -586,7 +566,28 @@ export default function RobotManualPage() {
                     )}
                 </div>
 
-                {/* Tab switcher */}
+                {/* Submit button — grid tab, after all reached, web only */}
+                {activeTab === 'grid' && allReached && !isWebView() && (
+                    <div className="px-4 pt-3 pb-1">
+                        {submitted ? (
+                            <div className="flex items-center justify-center gap-2 py-2.5 bg-green-50 border border-green-200 text-green-700 font-bold rounded-xl text-sm">
+                                ✅ Aktivitas berhasil dikumpulkan!
+                            </div>
+                        ) : (
+                            <button
+                                onClick={handleSubmit}
+                                disabled={isSubmitting}
+                                className="w-full flex items-center justify-center gap-2 py-2.5 bg-indigo-600 hover:bg-indigo-700
+                                           text-white font-bold rounded-xl text-sm shadow-sm
+                                           disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed
+                                           active:bg-indigo-800 transition-all duration-150"
+                            >
+                                {isSubmitting ? '⏳ Menyimpan...' : '📤 Kumpulkan'}
+                            </button>
+                        )}
+                    </div>
+                )}
+
                 <div className="flex gap-3 px-4 pt-2 pb-4">
                     <button
                         onClick={() => setActiveTab('editor')}

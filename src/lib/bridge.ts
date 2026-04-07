@@ -1,4 +1,4 @@
-// Helper to check if we are running inside React Native WebView
+
 export const isWebView = () => {
     return typeof window !== 'undefined' && (window as any).ReactNativeWebView;
 };

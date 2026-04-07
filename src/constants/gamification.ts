@@ -1,6 +1,4 @@
-/**
- * Gamifikasi AlgoPlay — selaras mobile (max 500 XP per bab, 5 level).
- */
+
 export const ACTIVITY_XP_BAB7: Record<string, number> = {
   'ap-k7-02': 80,
   'ap-k7-03': 110,

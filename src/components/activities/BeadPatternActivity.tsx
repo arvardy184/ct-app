@@ -154,7 +154,7 @@ export default function BeadPatternActivity({ onComplete }: BeadPatternActivityP
             setPlacedColor(color)
             setAttempts(prev => prev + 1)
 
-            // Check if correct
+  
             const correctColor = level.pattern[level.missingIndex]
             if (color === correctColor) {
                 setIsCorrect(true)
@@ -190,12 +190,12 @@ export default function BeadPatternActivity({ onComplete }: BeadPatternActivityP
                 }, 1500)
             } else {
                 setIsCorrect(false)
-                // Show hint after 2 wrong attempts
+                
                 if (attempts >= 1) {
                     setShowHint(true)
                 }
 
-                // Reset after showing wrong
+                
                 setTimeout(() => {
                     setPlacedColor(null)
                     setIsCorrect(null)

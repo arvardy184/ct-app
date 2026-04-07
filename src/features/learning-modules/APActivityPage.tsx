@@ -9,7 +9,6 @@ import { ACTIVITY_XP_BAB7 } from '../../constants/gamification'
 import { setAuthTokenFromNative, logActivity, upsertUserProgress, supabase } from '../../lib/supabase'
 import type { ExecutionCommand } from '../../types'
 
-// ─── Per-activity configuration ──────────────────────────────────────────────
 interface ActivityConfig {
     title: string
     icon: string
@@ -61,7 +60,6 @@ const ACTIVITY_CONFIGS: Record<string, ActivityConfig> = {
     },
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
 interface APActivityPageProps {
     activityId: string
 }
@@ -77,17 +75,18 @@ export default function APActivityPage({ activityId }: APActivityPageProps) {
     const [blockCount, setBlockCount] = useState(0)
     const [showChallenge, setShowChallenge] = useState(true)
     const [toolboxVisible, setToolboxVisible] = useState(true)
+    const [hasRun, setHasRun] = useState(false)
+    const [submitted, setSubmitted] = useState(false)
+    const [isSubmitting, setIsSubmitting] = useState(false)
 
     const navigate = useNavigate()
     const { isGamified } = useAppStore()
     const { getElapsedTime } = useTimeTracker({ activityName: activityId, autoStart: true })
 
-// Auth token injection from native
+
     useEffect(() => {
         if (isWebView()) {
-            setAuthTokenFromNative().then((ok) => {
-                console.log(`🔌 [${activityId}] Running in WebView`)
-                console.log('🔐 Auth token:', ok ? 'Set ✅' : 'Missing ❌')
+            setAuthTokenFromNative().then(() => {
                 const gamified = (window as any).__IS_GAMIFIED__
                 if (typeof gamified === 'boolean') {
                     useAppStore.setState({ isGamified: gamified })
@@ -111,29 +110,34 @@ export default function APActivityPage({ activityId }: APActivityPageProps) {
 
     const handleExecutionComplete = useCallback(() => {
         setIsRunning(false)
-        const score = ACTIVITY_XP_BAB7[activityId] ?? Math.max(10, 50 - blockCount)
+        setHasRun(true)
         if (isWebView()) {
+            const score = ACTIVITY_XP_BAB7[activityId] ?? Math.max(10, 50 - blockCount)
             sendToNative({ type: 'ACTIVITY_COMPLETE', data: { score, timeSpent: getElapsedTime() } })
-        } else {
-            // Browser mode: log directly to Supabase
-            supabase.auth.getSession().then(async ({ data }) => {
-                const uid = data.session?.user?.id
-                if (uid) {
-                    await logActivity(uid, activityId.toUpperCase(), getElapsedTime(), 1, score, true)
-
-                    await upsertUserProgress(uid, 'chapter7', 'completed')
-                    await upsertUserProgress(uid, 'posttest_chapter7', 'unlocked')
-                }
-            })
         }
     }, [getElapsedTime, blockCount, activityId])
+
+    const handleSubmit = useCallback(async () => {
+        if (submitted || isSubmitting) return
+        setIsSubmitting(true)
+        const score = ACTIVITY_XP_BAB7[activityId] ?? Math.max(10, 50 - blockCount)
+        const { data } = await supabase.auth.getSession()
+        const uid = data.session?.user?.id
+        if (uid) {
+            await logActivity(uid, activityId.toUpperCase(), getElapsedTime(), 1, score, true)
+            await upsertUserProgress(uid, 'chapter7', 'completed')
+            await upsertUserProgress(uid, 'posttest_chapter7', 'unlocked')
+        }
+        setIsSubmitting(false)
+        setSubmitted(true)
+    }, [submitted, isSubmitting, activityId, blockCount, getElapsedTime])
 
     const hasCode = commands.length > 0
 
     return (
         <div className="h-screen w-screen bg-slate-50 flex flex-col overflow-hidden select-none">
 
-            {/* ── Challenge Banner (collapsible) ─────────────────────── */}
+        
             {showChallenge && (
                 <div className="flex-shrink-0 bg-white border-b border-slate-200 p-4 shadow-sm z-10 transition-all">
                     <div className="flex items-start gap-4">
@@ -165,10 +169,9 @@ export default function APActivityPage({ activityId }: APActivityPageProps) {
                 </div>
             )}
 
-            {/* ── Tab Content ────────────────────────────────────────── */}
+   
             <div className="flex-1 min-h-0 relative">
 
-                {/* Editor Tab — never display:none so Blockly SVG keeps its layout dimensions */}
                 <div className={`absolute inset-0 flex ${activeTab === 'editor' ? 'z-10' : 'opacity-0 pointer-events-none z-0'}`}>
                     <BlocklyWorkspace
                         ref={blocklyRef}
@@ -264,6 +267,28 @@ export default function APActivityPage({ activityId }: APActivityPageProps) {
                         <div className="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-500 font-bold whitespace-nowrap flex-shrink-0">
                             🧱 {blockCount}
                         </div>
+                    </div>
+                )}
+
+                {/* Submit button — output tab, after running, web only */}
+                {activeTab === 'output' && hasRun && !isWebView() && (
+                    <div className="px-4 pt-3 pb-1">
+                        {submitted ? (
+                            <div className="flex items-center justify-center gap-2 py-2.5 bg-green-50 border border-green-200 text-green-700 font-bold rounded-xl text-sm">
+                                ✅ Aktivitas berhasil dikumpulkan!
+                            </div>
+                        ) : (
+                            <button
+                                onClick={handleSubmit}
+                                disabled={isSubmitting}
+                                className="w-full flex items-center justify-center gap-2 py-2.5 bg-indigo-600 hover:bg-indigo-700
+                                           text-white font-bold rounded-xl text-sm shadow-sm
+                                           disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed
+                                           active:bg-indigo-800 transition-all duration-150"
+                            >
+                                {isSubmitting ? '⏳ Menyimpan...' : '📤 Kumpulkan'}
+                            </button>
+                        )}
                     </div>
                 )}
 

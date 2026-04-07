@@ -1,17 +1,7 @@
 import * as Blockly from 'blockly'
 import { javascriptGenerator } from 'blockly/javascript'
 
-// ──────────────────────────────────────────────────────────────────────────────
-// BLOK ROBOT MANUAL (AP-K7-08-U)
-// Warna sesuai buku teks:
-//   Kuning (#F59E0B) = Kondisi Awal / Event
-//   Biru   (#3B82F6) = Aksi / Gerakan
-//   Orange (#F97316) = Kontrol
-//   Hijau  (#22C55E) = Sense / Kondisi
-//   Ungu   (#8B5CF6) = Tampilan
-// ──────────────────────────────────────────────────────────────────────────────
 
-// 1. KETIKA PERMAINAN DIMULAI — hat block (event/kondisi awal)
 Blockly.Blocks['robot_mulai'] = {
     init: function (this: Blockly.Block) {
         this.appendDummyInput()
@@ -23,7 +13,7 @@ Blockly.Blocks['robot_mulai'] = {
 }
 javascriptGenerator.forBlock['robot_mulai'] = () => ''
 
-// 2. MAJU N LANGKAH
+
 Blockly.Blocks['robot_maju'] = {
     init: function (this: Blockly.Block) {
         this.appendDummyInput()
@@ -40,7 +30,7 @@ javascriptGenerator.forBlock['robot_maju'] = function (block: Blockly.Block) {
     return `robot_maju(${block.getFieldValue('N')});\n`
 }
 
-// 3. PUTAR N DERAJAT (searah jarum jam)
+
 Blockly.Blocks['robot_putar'] = {
     init: function (this: Blockly.Block) {
         this.appendDummyInput()
@@ -57,7 +47,7 @@ javascriptGenerator.forBlock['robot_putar'] = function (block: Blockly.Block) {
     return `robot_putar(${block.getFieldValue('DEG')});\n`
 }
 
-// 4. ULANGI N KALI
+
 Blockly.Blocks['robot_ulangi'] = {
     init: function (this: Blockly.Block) {
         this.appendDummyInput()
@@ -77,7 +67,6 @@ javascriptGenerator.forBlock['robot_ulangi'] = function (block: Blockly.Block) {
     return `robot_ulangi(${n}, function() {\n${body}});\n`
 }
 
-// 5. JIKA MENCAPAI FINISH
 Blockly.Blocks['robot_jika_finish'] = {
     init: function (this: Blockly.Block) {
         this.appendDummyInput()
@@ -94,7 +83,7 @@ javascriptGenerator.forBlock['robot_jika_finish'] = function (block: Blockly.Blo
     return `robot_jika_finish(function() {\n${body}});\n`
 }
 
-// 6. BILANG [teks]
+
 Blockly.Blocks['robot_bilang'] = {
     init: function (this: Blockly.Block) {
         this.appendDummyInput()
@@ -111,9 +100,7 @@ javascriptGenerator.forBlock['robot_bilang'] = function (block: Blockly.Block) {
     return `robot_bilang("${text}");\n`
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
-// TOOLBOX CONFIGURATION
-// ──────────────────────────────────────────────────────────────────────────────
+
 export const robotToolboxConfig = {
     kind: 'flyoutToolbox',
     contents: [
@@ -126,9 +113,7 @@ export const robotToolboxConfig = {
     ]
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
-// COMMAND TYPE
-// ──────────────────────────────────────────────────────────────────────────────
+
 export interface RobotCommand {
     type: 'maju' | 'putar' | 'ulangi' | 'jika_finish' | 'bilang'
     n?: number
@@ -136,9 +121,7 @@ export interface RobotCommand {
     body?: RobotCommand[]
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
-// PARSER — converts generated JS code → RobotCommand[]
-// ──────────────────────────────────────────────────────────────────────────────
+
 export function parseRobotCode(code: string): RobotCommand[] {
     if (!code.trim()) return []
 
@@ -181,7 +164,5 @@ export function parseRobotCode(code: string): RobotCommand[] {
     return rootCommands
 }
 
-// Register (call once at module load)
-export function registerRobotBlocks() {
-    console.log('🤖 Robot Blockly blocks registered')
-}
+
+export function registerRobotBlocks() {}
