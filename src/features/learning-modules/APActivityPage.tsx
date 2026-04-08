@@ -277,30 +277,8 @@ export default function APActivityPage({ activityId }: APActivityPageProps) {
 
            
 
-                {/* Submit button — di atas tab switcher agar tidak ketutup nav bar */}
-                {activeTab === 'output' && hasRun && (
-                    <div className="px-4 pt-3 pb-2">
-                        {submitted ? (
-                            <div className="flex items-center justify-center gap-2 py-2.5 bg-green-50 border border-green-200 text-green-700 font-bold rounded-xl text-sm">
-                                ✅ Aktivitas berhasil dikumpulkan!
-                            </div>
-                        ) : (
-                            <button
-                                onClick={handleSubmit}
-                                disabled={isSubmitting}
-                                className="w-full flex items-center justify-center gap-2 py-2.5 bg-indigo-600 hover:bg-indigo-700
-                                           text-white font-bold rounded-xl text-sm shadow-sm
-                                           disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed
-                                           active:bg-indigo-800 transition-all duration-150"
-                            >
-                                {isSubmitting ? '⏳ Menyimpan...' : '📤 Kumpulkan'}
-                            </button>
-                        )}
-                    </div>
-                )}
-
-                {/* Tab switcher — selalu paling bawah dengan safe area */}
-                <div className="flex gap-3 px-4 pt-2" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+                {/* Tab switcher */}
+                <div className="flex gap-3 px-4 pt-2 pb-2">
                     <button
                         onClick={() => setActiveTab('editor')}
                         className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-200
@@ -325,6 +303,30 @@ export default function APActivityPage({ activityId }: APActivityPageProps) {
                         </button>
                     )}
                 </div>
+
+                {/* Submit button — di bawah tab switcher, safe area ada di sini */}
+                {activeTab === 'output' && hasRun ? (
+                    <div className="px-4 pt-1 pb-[max(1rem,env(safe-area-inset-bottom))]">
+                        {submitted ? (
+                            <div className="flex items-center justify-center gap-2 py-2.5 bg-green-50 border border-green-200 text-green-700 font-bold rounded-xl text-sm">
+                                ✅ Aktivitas berhasil dikumpulkan!
+                            </div>
+                        ) : (
+                            <button
+                                onClick={handleSubmit}
+                                disabled={isSubmitting}
+                                className="w-full flex items-center justify-center gap-2 py-2.5 bg-indigo-600 hover:bg-indigo-700
+                                           text-white font-bold rounded-xl text-sm shadow-sm
+                                           disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed
+                                           active:bg-indigo-800 transition-all duration-150"
+                            >
+                                {isSubmitting ? '⏳ Menyimpan...' : '📤 Kumpulkan'}
+                            </button>
+                        )}
+                    </div>
+                ) : (
+                    <div style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }} />
+                )}
             </div>
         </div>
     )
